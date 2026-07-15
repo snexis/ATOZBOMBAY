@@ -559,3 +559,391 @@ tr:hover {
         background: #eee !important;
     }
 }
+/* ==========================================================================
+   PLAYER DASHBOARD - FOLDER & BOX SYSTEM STYLES (v4.9)
+   ========================================================================== */
+
+:root {
+    --primary-bg: #0a0e17;
+    --card-bg: #151d30;
+    --accent-green: #00ffcc;
+    --accent-blue: #00d2ff;
+    --text-color: #ffffff;
+    --text-muted: #8fa0b5;
+    --danger-red: #ff4a4a;
+    --overlay-bg: rgba(5, 7, 12, 0.9);
+}
+
+/* ১. ব্যালেন্স ডিসপ্লে এবং স্বাগতম সেকশন */
+.welcome-box {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.balance-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.balance-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+.balance-card:hover {
+    transform: translateY(-3px);
+}
+
+.balance-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.balance-card p {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.play-points p {
+    color: var(--accent-blue);
+}
+
+.win-points p {
+    color: var(--accent-green);
+}
+
+/* ২. ফোল্ডার গ্রিড সিস্টেম */
+.folder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 20px;
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 0 15px;
+}
+
+.folder-btn {
+    background: var(--card-bg);
+    border: 2px dashed rgba(0, 210, 255, 0.3);
+    border-radius: 16px;
+    padding: 20px 10px;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.folder-btn:hover {
+    border-color: var(--accent-green);
+    background: rgba(0, 255, 204, 0.05);
+    transform: scale(1.05);
+}
+
+.folder-icon {
+    font-size: 40px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.folder-name {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.folder-name small {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ৩. সিকিউর বক্স ও ওভারলে সিস্টেম */
+.box-overlay {
+    display: none; /* জাভাস্ক্রিপ্ট দিয়ে 'flex' করা হবে */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.box-content {
+    background: #0f1624;
+    border: 2px solid var(--accent-blue);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    animation: zoomIn 0.3s ease-out;
+}
+
+.box-content.medium-box {
+    max-width: 600px;
+}
+
+.box-content.large-box {
+    max-width: 900px;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.box-header h3 {
+    margin: 0;
+    color: var(--accent-blue);
+    font-size: 18px;
+}
+
+.close-box {
+    font-size: 30px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-box:hover {
+    color: var(--danger-red);
+}
+
+.box-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ৪. বাজি টাইমলাইন সেকশন */
+.baji-timeline-section {
+    margin-bottom: 20px;
+}
+
+.baji-timeline-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.baji-item {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.baji-item.running {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+
+.baji-item.running .baji-status {
+    color: var(--accent-green);
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+.baji-item.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #0b0f1a;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+/* ৫. গেম ২২×১০ বোর্ড ও কন্টেইনার */
+.game-table-wrapper {
+    overflow-x: auto;
+    background: #080c14;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 15px 0;
+    max-height: 400px;
+}
+
+.game-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.game-table-wrapper th, .game-table-wrapper td {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.game-table-wrapper th {
+    background: var(--card-bg);
+    color: var(--accent-blue);
+    position: sticky;
+    top: 0;
+}
+
+.game-table-wrapper td.patti-cell {
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.2s;
+}
+
+.game-table-wrapper td.patti-cell:hover {
+    background: rgba(0, 210, 255, 0.15);
+    color: var(--accent-blue);
+}
+
+.game-table-wrapper td.patti-cell.selected {
+    background: var(--accent-green) !important;
+    color: #000 !important;
+    font-weight: bold;
+}
+
+/* ৬. বাজি ধরার কন্ট্রোল ও ইনপুট */
+.bet-control-panel {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.selected-patti-info {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.bet-input-row {
+    display: flex;
+    gap: 10px;
+}
+
+.bet-input-row input {
+    flex: 1;
+    background: #0a0e17;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    padding: 10px;
+    font-size: 15px;
+}
+
+.submit-bet-btn {
+    background: var(--accent-green);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.submit-bet-btn:hover {
+    opacity: 0.9;
+}
+
+/* ৭. উইথড্র বক্স ডিজাইন */
+.withdraw-balance-info {
+    text-align: center;
+    margin-bottom: 20px;
+    background: rgba(0, 210, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.withdraw-limit-text {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    background: #0a0e17;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    padding: 12px;
+    font-size: 16px;
+}
+
+.action-btn {
+    width: 100%;
+    background: var(--accent-blue);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.action-btn.confirm-btn {
+    background: var(--accent-green);
+}
+
+.status-pending {
+    font-size: 13px;
+    color: #ffd000;
+    line-height: 1.4;
+    margin-bottom: 15px;
+}
+
+/* মোবাইল রেসপন্সিভনেস */
+@media (max-width: 480px) {
+    .folder-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .balance-container {
+        grid-template-columns: 1fr;
+    }
+}
