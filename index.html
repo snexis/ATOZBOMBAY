@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AtoZ Bombay - Player Zone (v5.2)</title>
+    <title>AtoZ Bombay - Player Zone (v5.5)</title>
     
-    <!-- ফায়ারবেস কোর লাইব্রেরি সমূহ -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <!-- কনফিগারেশন ফাইল -->
     <script src="firebase-config.js"></script>
     
     <link rel="stylesheet" href="style.css">
@@ -19,6 +17,13 @@
 
     <header class="player-nav">
         <div class="nav-logo" id="navLogoText">ATOZ BOMBAY</div>
+        
+        <div class="nav-live-clock">
+            <span class="live-indicator-dot"></span>
+            <span id="liveTimeDisplay" class="clock-text">00:00:00 AM</span>
+            <span id="liveDateDisplay" class="date-text">00-00-0000</span>
+        </div>
+
         <div class="nav-user-info">
             <span id="playerNameDisplay">---</span>
             <button type="button" id="playerLogoutBtn" class="logout-btn">লগআউট</button>
@@ -34,20 +39,17 @@
             <div class="balance-container">
                 <div class="balance-card play-points">
                     <h4>প্লে পয়েন্ট (Play Point)</h4>
-                    <!-- ফায়ারবেস স্ক্রিপ্ট কানেকশনের জন্য আইডি ঠিক করা হলো -->
                     <p id="playPointsDisplay">0</p> 
                 </div>
                 <div class="balance-card win-points">
                     <h4>উইনিং পয়েন্ট (Win Point)</h4>
-                    <!-- ফায়ারবেস স্ক্রিপ্ট কানেকশনের জন্য আইডি ঠিক করা হলো -->
                     <p id="winPointsDisplay">0</p>
                 </div>
             </div>
         </section>
 
         <section class="folder-grid">
-            <!-- 'গেম খেলুন' ক্লিকেবল কার্ডে আইডি অ্যাড করা হয়েছে যাতে ইভেন্ট লিসেনার কাজ করে -->
-            <button type="button" class="folder-btn" id="playGameCard" onclick="openBox('playGameBox')">
+            <button type="button" class="folder-btn" id="playGameCard" onclick="openPlayGameDashboard()">
                 <span class="folder-icon">🎮</span>
                 <span class="folder-name">গেম খেলুন<br><small>(Play Game)</small></span>
             </button>
@@ -65,7 +67,6 @@
 
     </main>
 
-    <!-- গেম খেলুন পপআপ জোন -->
     <div id="playGameBox" class="box-overlay">
         <div class="box-content large-box">
             <div class="box-header">
@@ -74,17 +75,16 @@
             </div>
             <div class="box-body">
                 
-                <!-- ডাইনামিক মোড সিলেক্টর, টাইম স্লট ও বাজি কন্ট্রোল প্যানেল এখানে জেনারেট হবে -->
                 <div id="gameControlsWrapper"></div>
 
-                <!-- গেমের ২২x১০ টেবিলটি এখানে রেন্ডার হবে -->
+                <div id="printerOptionContainer" class="printer-option-container" style="margin: 10px 0; padding: 8px 12px; background: #1e293b; border-radius: 6px;"></div>
+
                 <div class="game-table-wrapper" id="gameTableWrapper"></div>
 
             </div>
         </div>
     </div>
 
-    <!-- উইথড্র পপআপ জোন -->
     <div id="withdrawBox" class="box-overlay">
         <div class="box-content">
             <div class="box-header">
@@ -117,7 +117,6 @@
         </div>
     </div>
 
-    <!-- রেজাল্ট হিস্ট্রি পপআপ জোন -->
     <div id="historyBox" class="box-overlay">
         <div class="box-content medium-box">
             <div class="box-header">
@@ -134,8 +133,7 @@
                             </tr>
                         </thead>
                         <tbody id="gameChartTableBody">
-                            <!-- রিয়েল-টাইম রেজাল্ট এখানে লোড হবে -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -147,12 +145,12 @@
         function openBox(boxId) {
             document.getElementById(boxId).style.display = 'flex';
         }
+        // v5.5 ক্লোজ বক্স হ্যান্ডলারে অ্যাক্টিভ সিলেকশন স্টেট ক্লিয়ারেন্স
         function closeBox(boxId) {
             document.getElementById(boxId).style.display = 'none';
         }
     </script>
 
-    <!-- স্ক্রিপ্ট লোডিং সিরিয়াল (সবচেয়ে গুরুত্বপূর্ণ) -->
     <script src="game_engine.js"></script>
     <script src="player.js"></script>
 </body>
