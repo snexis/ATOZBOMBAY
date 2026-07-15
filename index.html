@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AtoZ Bombay - Player Zone (v4.9)</title>
+    <title>AtoZ Bombay - Player Zone (v5.2)</title>
     
+    <!-- ফায়ারবেস কোর লাইব্রেরি সমূহ -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+    <!-- কনফিগারেশন ফাইল -->
     <script src="firebase-config.js"></script>
     
     <link rel="stylesheet" href="style.css">
@@ -31,18 +33,21 @@
             
             <div class="balance-container">
                 <div class="balance-card play-points">
-                    <h4>প্লে পয়েন্ট (Play Point)</h4>
-                    <p id="playPointsVal">0</p>
+                    <h4>প্লে পয়েন্ট (Play Point)</h4>
+                    <!-- ফায়ারবেস স্ক্রিপ্ট কানেকশনের জন্য আইডি ঠিক করা হলো -->
+                    <p id="playPointsDisplay">0</p> 
                 </div>
                 <div class="balance-card win-points">
-                    <h4>উইনিং পয়েন্ট (Win Point)</h4>
-                    <p id="winPointsVal">0</p>
+                    <h4>উইনিং পয়েন্ট (Win Point)</h4>
+                    <!-- ফায়ারবেস স্ক্রিপ্ট কানেকশনের জন্য আইডি ঠিক করা হলো -->
+                    <p id="winPointsDisplay">0</p>
                 </div>
             </div>
         </section>
 
         <section class="folder-grid">
-            <button type="button" class="folder-btn" onclick="openBox('playGameBox')">
+            <!-- 'গেম খেলুন' ক্লিকেবল কার্ডে আইডি অ্যাড করা হয়েছে যাতে ইভেন্ট লিসেনার কাজ করে -->
+            <button type="button" class="folder-btn" id="playGameCard" onclick="openBox('playGameBox')">
                 <span class="folder-icon">🎮</span>
                 <span class="folder-name">গেম খেলুন<br><small>(Play Game)</small></span>
             </button>
@@ -60,6 +65,7 @@
 
     </main>
 
+    <!-- গেম খেলুন পপআপ জোন -->
     <div id="playGameBox" class="box-overlay">
         <div class="box-content large-box">
             <div class="box-header">
@@ -67,45 +73,27 @@
                 <span class="close-box" onclick="closeBox('playGameBox')">&times;</span>
             </div>
             <div class="box-body">
-                <div class="baji-timeline-section">
-                    <h4>আজকের বাজি সমূহ (Time Table)</h4>
-                    <div id="bajiTimelineList" class="baji-timeline-list">
-                        </div>
-                </div>
+                
+                <!-- ডাইনামিক মোড সিলেক্টর, টাইম স্লট ও বাজি কন্ট্রোল প্যানেল এখানে জেনারেট হবে -->
+                <div id="gameControlsWrapper"></div>
 
-                <div id="activeGameChartSection" class="active-chart-section" style="display: none;">
-                    <div class="active-chart-header">
-                        <h4 id="selectedBajiTitle">বাজি নম্বর: ১ (রানিং)</h4>
-                        <span class="countdown-indicator" id="bajiTimer">সময় বাকি: 00:00</span>
-                    </div>
-                    
-                    <div class="game-table-wrapper" id="gameTableWrapper">
-                        </div>
+                <!-- গেমের ২২x১০ টেবিলটি এখানে রেন্ডার হবে -->
+                <div class="game-table-wrapper" id="gameTableWrapper"></div>
 
-                    <div class="bet-control-panel">
-                        <div class="selected-patti-info">
-                            <span>সিলেক্টেড পাত্তি: </span>
-                            <strong id="selectedPattiDisplay">কোনোটি নয়</strong>
-                        </div>
-                        <div class="bet-input-row">
-                            <input type="number" id="betAmountInput" placeholder="অ্যামাউন্ট লিখুন" min="10">
-                            <button type="button" id="submitBetBtn" class="submit-bet-btn">বাজি ধরুন (Bet / Submit)</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
+    <!-- উইথড্র পপআপ জোন -->
     <div id="withdrawBox" class="box-overlay">
         <div class="box-content">
             <div class="box-header">
-                <h3>💰 উইথড্র পয়েন্ট (Withdraw)</h3>
+                <h3>💰 উইথড্র পয়েন্ট (Withdraw)</h3>
                 <span class="close-box" onclick="closeBox('withdrawBox')">&times;</span>
             </div>
             <div class="box-body">
                 <div class="withdraw-balance-info">
-                    <p>আপনার উইনিং ব্যালেন্স: <strong id="withdrawWinBalance">0</strong> পয়েন্ট</p>
+                    <p>আপনার উইনিং ব্যালেন্স: <strong id="withdrawWinBalance">0</strong> পয়েন্ট</p>
                     <small class="withdraw-limit-text">* দৈনিক তোলার সীমা: ১০০ থেকে ১০০০ টাকা।</small>
                 </div>
 
@@ -118,9 +106,9 @@
                 </div>
 
                 <div id="withdrawStep2" style="display: none; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
-                    <p class="status-pending">💡 আপনার অনুরোধ অ্যাডমিন প্যানেলে পাঠানো হয়েছে। ওটিপি (OTP) কোডের জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+                    <p class="status-pending">💡 আপনার অনুরোধ অ্যাডমিন প্যানেলে পাঠানো হয়েছে। ওটিপি (OTP) কোডের জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
                     <div class="form-group">
-                        <label for="withdrawOtpCode">অ্যাডমিনের দেওয়া OTP কোডটি লিখুন:</label>
+                        <label for="withdrawOtpCode">অ্যাডমিনের দেওয়া OTP কোডটি লিখুন:</label>
                         <input type="text" id="withdrawOtpCode" placeholder="Enter OTP/Code">
                     </div>
                     <button type="button" id="confirmWithdrawBtn" class="action-btn confirm-btn">কনফার্ম করুন (Confirm Code)</button>
@@ -129,6 +117,7 @@
         </div>
     </div>
 
+    <!-- রেজাল্ট হিস্ট্রি পপআপ জোন -->
     <div id="historyBox" class="box-overlay">
         <div class="box-content medium-box">
             <div class="box-header">
@@ -140,12 +129,13 @@
                     <table>
                         <thead>
                             <tr>
-                                <th id="thTime">সময় (Time Slot)</th>
+                                <th id="thTime">समय (Time Slot)</th>
                                 <th id="thResult">উইনিং নাম্বার (Result)</th>
                             </tr>
                         </thead>
                         <tbody id="gameChartTableBody">
-                            </tbody>
+                            <!-- রিয়েল-টাইম রেজাল্ট এখানে লোড হবে -->
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -153,6 +143,7 @@
     </div>
 
     <script>
+        // পপআপ মডাল ওপেন এবং ক্লোজ হ্যান্ডলার
         function openBox(boxId) {
             document.getElementById(boxId).style.display = 'flex';
         }
@@ -161,7 +152,8 @@
         }
     </script>
 
-    <script src="player.js"></script>
+    <!-- স্ক্রিপ্ট লোডিং সিরিয়াল (সবচেয়ে গুরুত্বপূর্ণ) -->
     <script src="game_engine.js"></script>
+    <script src="player.js"></script>
 </body>
 </html>
