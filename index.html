@@ -28,38 +28,140 @@
         <section class="welcome-box">
             <h2 id="welcomeHeading">স্বাগতম, প্লেয়ার!</h2>
             <p id="welcomeSubtext">আপনার লাইভ গেমিং ড্যাশবোর্ড এখানে দেখুন।</p>
+            
+            <div class="balance-container">
+                <div class="balance-card play-points">
+                    <h4>প্লে পয়েন্ট (Play Point)</h4>
+                    <p id="playPointsVal">0</p>
+                </div>
+                <div class="balance-card win-points">
+                    <h4>উইনিং পয়েন্ট (Win Point)</h4>
+                    <p id="winPointsVal">0</p>
+                </div>
+            </div>
         </section>
 
-        <section class="player-box chart-section">
-            <div class="chart-header">
-                <h3 id="chartTitle">📊 লাইভ গেম রেজাল্ট চার্ট</h3>
-                
-                <button type="button" id="printChartBtn" class="print-btn" title="চার্ট প্রিন্ট করুন">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                        <rect x="6" y="14" width="12" height="8"></rect>
-                    </svg>
-                    <span id="printBtnText">প্রিন্ট চার্ট</span>
-                </button>
-            </div>
-
-            <div class="table-responsive" id="printableArea">
-                <table>
-                    <thead>
-                        <tr>
-                            <th id="thTime">সময় (Time Slot)</th>
-                            <th id="thResult">উইনিং নাম্বার (Result)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="gameChartTableBody">
-                        </tbody>
-                </table>
-            </div>
+        <section class="folder-grid">
+            <button type="button" class="folder-btn" onclick="openBox('playGameBox')">
+                <span class="folder-icon">🎮</span>
+                <span class="folder-name">গেম খেলুন<br><small>(Play Game)</small></span>
+            </button>
+            
+            <button type="button" class="folder-btn" onclick="openBox('withdrawBox')">
+                <span class="folder-icon">💰</span>
+                <span class="folder-name">টাকা তুলুন<br><small>(Withdraw Point)</small></span>
+            </button>
+            
+            <button type="button" class="folder-btn" onclick="openBox('historyBox')">
+                <span class="folder-icon">📜</span>
+                <span class="folder-name">রেজাল্ট চার্ট<br><small>(Result History)</small></span>
+            </button>
         </section>
 
     </main>
 
+    <div id="playGameBox" class="box-overlay">
+        <div class="box-content large-box">
+            <div class="box-header">
+                <h3>🎮 প্লে গেম জোন</h3>
+                <span class="close-box" onclick="closeBox('playGameBox')">&times;</span>
+            </div>
+            <div class="box-body">
+                <div class="baji-timeline-section">
+                    <h4>আজকের বাজি সমূহ (Time Table)</h4>
+                    <div id="bajiTimelineList" class="baji-timeline-list">
+                        </div>
+                </div>
+
+                <div id="activeGameChartSection" class="active-chart-section" style="display: none;">
+                    <div class="active-chart-header">
+                        <h4 id="selectedBajiTitle">বাজি নম্বর: ১ (রানিং)</h4>
+                        <span class="countdown-indicator" id="bajiTimer">সময় বাকি: 00:00</span>
+                    </div>
+                    
+                    <div class="game-table-wrapper" id="gameTableWrapper">
+                        </div>
+
+                    <div class="bet-control-panel">
+                        <div class="selected-patti-info">
+                            <span>সিলেক্টেড পাত্তি: </span>
+                            <strong id="selectedPattiDisplay">কোনোটি নয়</strong>
+                        </div>
+                        <div class="bet-input-row">
+                            <input type="number" id="betAmountInput" placeholder="অ্যামাউন্ট লিখুন" min="10">
+                            <button type="button" id="submitBetBtn" class="submit-bet-btn">বাজি ধরুন (Bet / Submit)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdrawBox" class="box-overlay">
+        <div class="box-content">
+            <div class="box-header">
+                <h3>💰 উইথড্র পয়েন্ট (Withdraw)</h3>
+                <span class="close-box" onclick="closeBox('withdrawBox')">&times;</span>
+            </div>
+            <div class="box-body">
+                <div class="withdraw-balance-info">
+                    <p>আপনার উইনিং ব্যালেন্স: <strong id="withdrawWinBalance">0</strong> পয়েন্ট</p>
+                    <small class="withdraw-limit-text">* দৈনিক তোলার সীমা: ১০০ থেকে ১০০০ টাকা।</small>
+                </div>
+
+                <div id="withdrawStep1">
+                    <div class="form-group">
+                        <label for="withdrawAmount">টাকার অ্যামাউন্ট লিখুন:</label>
+                        <input type="number" id="withdrawAmount" placeholder="উইথড্র অ্যামাউন্ট লিখুন" min="100" max="1000">
+                    </div>
+                    <button type="button" id="sendWithdrawReqBtn" class="action-btn">অনুরোধ পাঠান (Send Request)</button>
+                </div>
+
+                <div id="withdrawStep2" style="display: none; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                    <p class="status-pending">💡 আপনার অনুরোধ অ্যাডমিন প্যানেলে পাঠানো হয়েছে। ওটিপি (OTP) কোডের জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+                    <div class="form-group">
+                        <label for="withdrawOtpCode">অ্যাডমিনের দেওয়া OTP কোডটি লিখুন:</label>
+                        <input type="text" id="withdrawOtpCode" placeholder="Enter OTP/Code">
+                    </div>
+                    <button type="button" id="confirmWithdrawBtn" class="action-btn confirm-btn">কনফার্ম করুন (Confirm Code)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyBox" class="box-overlay">
+        <div class="box-content medium-box">
+            <div class="box-header">
+                <h3>📜 লাইভ গেম রেজাল্ট চার্ট</h3>
+                <span class="close-box" onclick="closeBox('historyBox')">&times;</span>
+            </div>
+            <div class="box-body">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th id="thTime">সময় (Time Slot)</th>
+                                <th id="thResult">উইনিং নাম্বার (Result)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gameChartTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openBox(boxId) {
+            document.getElementById(boxId).style.display = 'flex';
+        }
+        function closeBox(boxId) {
+            document.getElementById(boxId).style.display = 'none';
+        }
+    </script>
+
     <script src="player.js"></script>
+    <script src="game_engine.js"></script>
 </body>
 </html>
