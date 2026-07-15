@@ -1,13 +1,13 @@
 // ==========================================================================
-// ATOZ BOMBAY - PLAYER ZONE CORE LOGIC (v5.2 - FULL INTEGRATION)
+// ATOZ BOMBAY - PLAYER ZONE CORE LOGIC (v5.3 - SECURE & FAST)
 // ==========================================================================
 
-// গেমপ্লে স্টেট ট্র্যাকিং ভেরিয়েবল
+// গেমপ্লে স্টেট ট্র্যাকিং ভেরিয়বল
 let selectedPatti = null;
 let selectedWord = null;
 let selectedColumn = null;
-let currentGameMode = 'both'; // ডিফল্ট মোড (options: 'digit', 'word', 'both')
-let selectedTimeSlot = null;  // প্লেয়ারের সিলেক্ট করা টাইম স্লট
+let currentGameMode = 'both'; 
+let selectedTimeSlot = null;  
 
 document.addEventListener("DOMContentLoaded", () => {
     // সেশন চেক: লগইন ছাড়া কেউ ঢুকতে পারবে না
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // DOM এলিমেন্টসমূহ সিলেক্ট করা
+    // DOM এলিমেন্টসমূহ
     const playerNameDisplay = document.getElementById("playerNameDisplay");
     const playerLogoutBtn = document.getElementById("playerLogoutBtn");
     const gameChartTableBody = document.getElementById("gameChartTableBody");
@@ -47,31 +47,47 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // ফায়ারবেস থেকে প্লেয়ারের রিয়েল-টাইম ডেটা (Points & Language) রিড এবং ট্র্যাক করা
-    window.db.ref("users/" + currentUser.username).on("value", (snapshot) => {
-        if (snapshot.exists()) {
-            const userData = snapshot.val();
-            
-            // অ্যাকাউন্ট ব্লক করা থাকলে সঙ্গে সঙ্গে কিক-আউট
-            if (userData.status === "blocked") {
-                alert(userData.language === "en" ? "Your account is blocked!" : "আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে!");
-                logoutUser();
-                return;
+    // ক) ভাষা এবং ব্লক স্ট্যাটাস একবার রিড করা (যাতে লুপ বা রিফ্রেশ না হয়)
+    window.db.ref("users/" + currentUser.username).once("value")
+        .then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                
+                // ব্লক চেক
+                if (userData.status === "blocked") {
+                    alert(userData.language === "en" ? "Your account is blocked!" : "আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে!");
+                    logoutUser();
+                    return;
+                }
+
+                // ভাষা সেটআপ
+                const lang = userData.language === "en" ? "en" : "bn";
+                applyLanguage(lang);
             }
+        });
 
-            // প্লেয়ারের ড্যাশবোর্ডের Play Point এবং Win Point আপডেট করা
-            const playPointElem = document.getElementById("playPointsDisplay");
-            const winPointElem = document.getElementById("winPointsDisplay");
-            if (playPointElem) playPointElem.innerText = userData.playPoints || 0;
-            if (winPointElem) winPointElem.innerText = userData.winPoints || 0;
+    // খ) শুধুমাত্র পয়েন্ট রিয়েল-টাইম ট্র্যাক করা (অন্য কোনো ফাংশন এখানে লুপ করবে না)
+    window.db.ref("users/" + currentUser.username + "/playPoints").on("value", (snap) => {
+        const playPointElem = document.getElementById("playPointsDisplay");
+        if (playPointElem) playPointElem.innerText = snap.val() || 0;
+    });
 
-            // ভাষা সেটআপ করা
-            const lang = userData.language === "en" ? "en" : "bn";
-            applyLanguage(lang);
+    window.db.ref("users/" + currentUser.username + "/winPoints").on("value", (snap) => {
+        const winPointElem = document.getElementById("winPointsDisplay");
+        if (winPointElem) winPointElem.innerText = snap.val() || 0;
+        
+        const withdrawWinBalance = document.getElementById("withdrawWinBalance");
+        if (withdrawWinBalance) withdrawWinBalance.innerText = snap.val() || 0;
+    });
+
+    // গ) ব্লক স্ট্যাটাস রিয়েলটাইম লিসেন করা (যদি এডমিন হুট করে ব্লক করে)
+    window.db.ref("users/" + currentUser.username + "/status").on("value", (snap) => {
+        if (snap.val() === "blocked") {
+            logoutUser();
         }
     });
 
-    // স্ক্রিনের টেক্সটগুলো নির্দিষ্ট ভাষায় রূপান্তর করার ফাংশন
+    // স্ক্রিনের টেক্সট রূপান্তর করার ফাংশন
     function applyLanguage(lang) {
         const str = languageStrings[lang];
         
@@ -93,15 +109,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (thTime) thTime.innerText = str.thTime;
         if (thResult) thResult.innerText = str.thResult;
 
-        // লাইভ চার্ট লিসেনার চালু করা
+        // রেজাল্ট চার্ট লিসেনার কেবল একবারই চালু হবে
         listenToLiveChart();
     }
 
-    // ১. রিয়েল-টাইম লাইভ গেম চার্ট (No Refresh)
+    // লাইভ রেজাল্ট চার্ট
     function listenToLiveChart() {
         window.db.ref("gameChart").on("value", (snapshot) => {
             if (gameChartTableBody) {
-                gameChartTableBody.innerHTML = ""; // ডুপ্লিকেট এড়াতে টেবিল খালি করা
+                gameChartTableBody.innerHTML = ""; 
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const timeSlot = childSnapshot.key;
@@ -119,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ২. স্মার্ট চার্ট প্রিন্ট মেকানিজম (Clean Layout)
+    // চার্ট প্রিন্ট মেকানিজম
     if (printChartBtn) {
         printChartBtn.addEventListener("click", () => {
             const printContent = document.getElementById("printableArea").innerHTML;
@@ -140,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // লগআউট হ্যান্ডলার
+    // লগআউট
     if (playerLogoutBtn) {
         playerLogoutBtn.addEventListener("click", logoutUser);
     }
@@ -149,42 +165,34 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.clear();
         window.location.href = "index.html";
     }
-
-    // ==========================================
-    // ৩. গেম খেলুন (PLAY GAME) মেকানিজম এবং বাটন লিসেনার
-    // ==========================================
-    const playGameCard = document.getElementById("playGameCard"); // 'গেম খেলুন' ক্লিকেবল কার্ড/বাটন
-    if (playGameCard) {
-        playGameCard.addEventListener("click", openPlayGameDashboard);
-    }
 });
 
 /**
- * ৪. "গেম খেলুন" বাটনে ক্লিক করলে সম্পূর্ণ ড্যাশবোর্ড ও গেম সেটআপ ওপেন করার ফাংশন
+ * ২. "গেম খেলুন" বাটনে ক্লিক করলে রান হবে (HTML Onclick থেকে সরাসরি ট্রিগার্ড)
  */
-function openPlayGameDashboard() {
-    const modal = document.getElementById("playGameModal"); // আপনার ড্যাশবোর্ড পপআপ বা মডাল কন্টেইনার
-    if (!modal) return;
+window.openPlayGameDashboard = function() {
+    // পপআপ স্ক্রিনে আনা (Flex মোডে)
+    const modal = document.getElementById("playGameBox"); 
+    if (modal) {
+        modal.style.display = "flex";
+    }
 
-    modal.style.display = "block"; // পপআপ স্ক্রিনে দৃশ্যমান করা
-
-    // ক) টাইম স্লট এবং মোড সিলেক্টর তৈরি করা
+    // ক) মোড সিলেক্টর ও টাইম স্লট জেনারেট করা
     createGameControlsHTML();
 
-    // খ) ডিফল্ট গেম টেবিল রেন্ডার করা (যা game_engine.js থেকে রেন্ডার হবে)
+    // খ) টেবিল জেনারেট করা
     if (typeof generateGameTable === "function") {
         generateGameTable();
     }
-}
+};
 
 /**
- * ৫. প্লে-জোন মডালের ভেতর টাইম স্লট, মোড সিলেক্টর এবং ইনপুট ফিল্ড ডাইনামিকালি সেট করার ফাংশন
+ * ৩. প্লে-জোন মডালের কন্ট্রোল প্যানেল জেনারেশন
  */
 function createGameControlsHTML() {
     const controlsContainer = document.getElementById("gameControlsWrapper");
     if (!controlsContainer) return;
 
-    // খাতার নকশা ও আপনার রিকোয়েস্ট অনুযায়ী ওপরে মোড সিলেক্টর ও নিচে টাইম স্লট বাটন ও ইনপুট বসানো হচ্ছে
     controlsContainer.innerHTML = `
         <div class="mode-selector-container" id="gameModeSelector">
             <button type="button" class="mode-btn" id="btnModeDigit" onclick="switchGameMode('digit')">Digit Only</button>
@@ -201,43 +209,43 @@ function createGameControlsHTML() {
             </div>
         </div>
 
-        <div class="bet-input-section">
-            <div class="selected-details" id="selectedPattiDisplay">সিলেকশন: কোনো ঘর সিলেক্ট করা হয়নি</div>
-            <div class="bet-form">
-                <input type="number" id="betAmountInput" placeholder="বাজির পরিমাণ লিখুন (যেমন: 50)" min="1">
-                <button type="button" class="submit-bet-btn" onclick="submitPlayerBet()">বাজি সাবমিট করুন (Submit Bet)</button>
+        <div class="bet-control-panel">
+            <div class="selected-patti-info">
+                <span>সিলেক্টেড পাত্তি / ওয়ার্ড: </span>
+                <strong id="selectedPattiDisplay">কোনোটি নয়</strong>
+            </div>
+            <div class="bet-input-row">
+                <input type="number" id="betAmountInput" placeholder="অ্যামাউন্ট লিখুন" min="10">
+                <button type="button" id="submitBetBtn" class="submit-bet-btn" onclick="submitPlayerBet()">বাজি ধরুন (Bet / Submit)</button>
             </div>
         </div>
     `;
 }
 
 /**
- * ৬. প্লেয়ার মোড চেঞ্জ করলে রান হওয়া ফাংশন (৩টি আলাদা অপশন হ্যান্ডলিং)
+ * ৪. মোড স্যুইচ লজিক
  */
 window.switchGameMode = function(mode) {
     currentGameMode = mode;
 
-    // বাটনগুলোর অ্যাক্টিভ ক্লাস টগল করা
     document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
     if (mode === 'digit') document.getElementById('btnModeDigit').classList.add('active');
     if (mode === 'word') document.getElementById('btnModeWord').classList.add('active');
     if (mode === 'both') document.getElementById('btnModeBoth').classList.add('active');
 
-    // নতুন মোড অনুযায়ী টেবিল রি-রেন্ডার করা
     if (typeof generateGameTable === 'function') {
         generateGameTable();
     }
     
-    // আগের ভুল বাজি সিলেকশন রিসেট করা
     selectedPatti = null;
     selectedWord = null;
     selectedColumn = null;
     const displayElement = document.getElementById('selectedPattiDisplay');
-    if (displayElement) displayElement.innerText = "সিলেকশন: কোনো ঘর সিলেক্ট করা হয়নি";
+    if (displayElement) displayElement.innerText = "কোনোটি নয়";
 };
 
 /**
- * ৭. টাইম স্লট সিলেক্ট করার ফাংশন
+ * ৫. টাইম স্লট সিলেক্ট লজিক
  */
 window.selectTimeSlot = function(slotId, slotName) {
     document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('active'));
@@ -245,19 +253,16 @@ window.selectTimeSlot = function(slotId, slotName) {
     const targetBtn = document.getElementById(`btn-${slotId}`);
     if (targetBtn) targetBtn.classList.add('active');
     selectedTimeSlot = slotId;
-
-    console.log(`Selected Slot: ${slotName}`);
 };
 
 /**
- * ৮. সিকিউর বাজি সাবমিট করার ফাংশন (ফায়ারবেস ইন্টিগ্রেশন)
+ * ৬. বাজি সাবমিট লজিক
  */
 window.submitPlayerBet = function() {
     const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
     const betAmountInput = document.getElementById('betAmountInput');
     const betAmount = parseInt(betAmountInput ? betAmountInput.value : 0);
 
-    // সিকিউরিটি ভ্যালিডেশন চেক
     if (!selectedTimeSlot) {
         alert("দয়া করে আগে একটি Time Slot সিলেক্ট করুন!");
         return;
@@ -271,7 +276,6 @@ window.submitPlayerBet = function() {
         return;
     }
 
-    // ফায়ারবেস থেকে প্লেয়ারের লাইভ ব্যালেন্স রিড করা
     window.db.ref("users/" + currentUser.username).once("value").then((snapshot) => {
         if (snapshot.exists()) {
             const userData = snapshot.val();
@@ -282,7 +286,6 @@ window.submitPlayerBet = function() {
                 return;
             }
 
-            // বাজির ডাটা অবজেক্ট
             const betData = {
                 username: currentUser.username,
                 patti: selectedPatti,
@@ -295,7 +298,6 @@ window.submitPlayerBet = function() {
                 status: 'pending'
             };
 
-            // ডাটাবেজ আপডেট ডিক্লেয়ারেশন
             const newBetKey = window.db.ref().child(`bets`).push().key;
             const updates = {};
             updates[`bets/${newBetKey}`] = betData;
@@ -304,21 +306,19 @@ window.submitPlayerBet = function() {
             window.db.ref().update(updates)
                 .then(() => {
                     alert("আপনার বাজি সফলভাবে সাবমিট হয়েছে!");
-                    if (betAmountInput) betAmountInput.value = ''; // ইনপুট খালি করা
+                    if (betAmountInput) betAmountInput.value = ''; 
                     
-                    // সিলেকশন ক্লিয়ার
                     selectedPatti = null;
                     selectedWord = null;
                     selectedColumn = null;
                     const displayElement = document.getElementById('selectedPattiDisplay');
-                    if (displayElement) displayElement.innerText = "সিলেকশন: কোনো ঘর সিলেক্ট করা হয়নি";
+                    if (displayElement) displayElement.innerText = "কোনোটি নয়";
                     
-                    // টেবিল ক্লিয়ার
                     document.querySelectorAll('.patti-cell.selected').forEach(cell => cell.classList.remove('selected'));
                 })
                 .catch((error) => {
                     console.error("Bet Submission Error: ", error);
-                    alert("বাজি সাবমিট করতে সমস্যা হয়েছে, আবার চেষ্টা করুন।");
+                    alert("বাজি সাবমিট করতে সমস্যা হয়েছে।");
                 });
         }
     });
