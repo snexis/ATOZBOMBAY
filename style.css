@@ -55,7 +55,7 @@ body {
     overflow: hidden;
 }
 
-/* নিউ আপডেট ভার্সন ব্যানার */
+/* New Update Version Banner */
 .update-version-tag {
     position: absolute;
     top: 0;
@@ -94,7 +94,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* ইনপুট গ্রুপ */
+/* Input Group */
 .input-group {
     margin-bottom: 20px;
 }
@@ -124,7 +124,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
 }
 
-/* চেকবক্স / পাসওয়ার্ড সেভ বাটন */
+/* Checkbox Styles */
 .remember-me-container {
     margin-bottom: 25px;
 }
@@ -169,7 +169,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
-/* প্রিমিয়াম বাটন */
+/* Buttons */
 .glow-btn, .action-btn-glow {
     width: 100%;
     padding: 14px;
@@ -196,7 +196,7 @@ body {
     color: #fff;
 }
 
-/* টু-স্টেপ ভেরিফিকেশন নোটিশ বক্স */
+/* Notice Box */
 .notice-box {
     margin-top: 25px;
     padding: 15px;
@@ -210,7 +210,7 @@ body {
     display: none !important;
 }
 
-/* স্পিনার অ্যানিমেশন */
+/* Spinner Animation */
 .spinner {
     width: 24px;
     height: 24px;
@@ -280,7 +280,7 @@ body {
     gap: 20px;
 }
 
-/* 🕒 লাইভ ডিজিটাল ঘড়ি ও ইন্ডিকেটর স্টাইল (v5.5) */
+/* Live Clock Style */
 .nav-live-clock {
     display: flex;
     align-items: center;
@@ -345,7 +345,7 @@ body {
     width: 100%;
 }
 
-/* স্ট্যাটাস কার্ড বা কাউন্টার */
+/* Dashboard counters */
 .dashboard-counters {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -377,7 +377,7 @@ body {
 .bg-purple { border-top: 4px solid var(--neon-purple); }
 .bg-dark-red { border-top: 4px solid var(--neon-red); }
 
-/* গ্রিড লেআউট */
+/* Admin Grid Layout */
 .admin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -440,7 +440,7 @@ tr:hover {
     background-color: rgba(255, 255, 255, 0.02);
 }
 
-/* ব্যাজ ও ট্যাগস */
+/* Badges */
 .code-badge {
     background-color: #232936;
     padding: 4px 8px;
@@ -467,7 +467,7 @@ tr:hover {
 .status-approved { background-color: rgba(0, 255, 135, 0.15); color: var(--neon-green); }
 .status-pending { background-color: rgba(255, 51, 102, 0.15); color: var(--neon-red); }
 
-/* অ্যাকশন বাটনসমূহ */
+/* Buttons Action */
 .btn-action {
     padding: 6px 12px;
     border: none;
@@ -568,7 +568,7 @@ tr:hover {
 /* ১. ব্যালেন্স ডিসপ্লে এবং স্বাগতম সেকশন */
 .balance-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr); /* ফিক্সড: ডেক্সটপ ও বড় স্ক্রিনে সবসময় পাশাপাশি ২টি কলাম রাখবে */
     gap: 15px;
     margin-top: 20px;
     max-width: 500px;
@@ -809,7 +809,7 @@ tr:hover {
     z-index: 2;
 }
 
-/* ৬. ডাইনামিক মাল্টি-বেটিং ঘর এবং সিলেকশন ওভারলে স্টাইলস (v5.5-এ যুক্ত হয়েছে) */
+/* ৬. ডাইনামিক মাল্টি-বেটিং ঘর এবং সিলেকশন ওভারলে স্টাইলস */
 .game-table-wrapper td.patti-cell {
     position: relative;
     cursor: pointer;
@@ -824,7 +824,7 @@ tr:hover {
     box-shadow: inset 0 0 8px rgba(0, 210, 255, 0.3);
 }
 
-/* কাস্টম সিলেকশন কার্ড ও প্লে পয়েন্ট ব্যাজ ডিজাইন */
+/* কাস্টম সিলেকশন কার্ড ও প্লে পয়েন্ট ব্যাজ ডিজাইন */
 .active-bet-overlay {
     display: flex;
     flex-direction: column;
@@ -840,7 +840,7 @@ tr:hover {
 }
 
 .bet-pts-badge {
-    background-color: #eab308; /* গোল্ড নিয়ন */
+    background-color: #eab308;
     color: #000;
     padding: 1px 4px;
     border-radius: 3px;
@@ -853,13 +853,13 @@ tr:hover {
 
 /* সিলেক্টেড কন্ডিশন */
 .game-table-wrapper td.patti-cell.selected {
-    background: #047857 !important; /* প্রফেশনাল এমারেল্ড গ্রিন */
+    background: #047857 !important;
     color: #fff !important;
     border: 1px dashed #34d399 !important;
     box-shadow: inset 0 0 10px rgba(52, 211, 153, 0.4);
 }
 
-/* রেড সিগন্যাল ওভারলিমিট ওয়ার্নিং */
+/* রেড সিগন্যাল ওভারলিমিট ওয়ার্নিং */
 .game-table-wrapper td.patti-cell.overlimit-red {
     background: #991b1b !important;
     color: #fff !important;
@@ -996,7 +996,15 @@ tr:hover {
         grid-template-columns: 1fr 1fr;
     }
     .balance-container {
-        grid-template-columns: 1fr;
+        /* ফিক্সড: মোবাইলেও উইনিং ও প্লে পয়েন্ট বার দুটিকে পাশাপাশি রাখবে নিচে নামাবে না */
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+    .balance-card h4 {
+        font-size: 11px; /* মোবাইল স্ক্রিনের জন্য টেক্সট সাইজ একটু ছোট করা হয়েছে */
+    }
+    .balance-card p {
+        font-size: 18px; /* মোবাইল স্ক্রিনের জন্য সংখ্যাটি রিডএবল সাইজে রাখা হয়েছে */
     }
 }
 
