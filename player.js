@@ -22,10 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const gameChartTableBody = document.getElementById("gameChartTableBody");
     const printChartBtn = document.getElementById("printChartBtn");
 
-    // ১. লাইভ ডেট ও সেকেন্ডসহ সময় আপডেট করার কন্টিনিউয়াস ঘড়ি
+    // ১. লাইভ ডেট ও সেকেন্ডসহ সময় আপডেট করার কন্টিনিউয়াস ঘড়ি
     startLiveClock();
 
-    // ২. সেশন অনুযায়ী প্লেয়ার ডেটা এবং প্রিন্ট পারমিশন রিড করা
+    // ২. সেশন অনুযায়ী প্লেয়ার ডেটা এবং প্রিন্ট পারমিশন রিড করা
     window.db.ref("users/" + currentUser.username).once("value")
         .then((snapshot) => {
             if (snapshot.exists()) {
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-    // ৩. রিয়েল-টাইম পয়েন্ট লিসেনার
+    // ৩. রিয়েল-টাইম পয়েন্ট লিসেনার
     window.db.ref("users/" + currentUser.username + "/playPoints").on("value", (snap) => {
         const playPointElem = document.getElementById("playPointsDisplay");
         if (playPointElem) playPointElem.innerText = snap.val() || 0;
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
- * লাইভ ডেট ও সেকেন্ডসহ কন্টিনিউয়াস ডিজিটাল ক্লক
+ * লাইভ ডেট ও সেকেন্ডসহ কন্টিনিউয়াস ডিজিটাল ক্লক
  */
 function startLiveClock() {
     const liveTimeElem = document.getElementById("liveTimeDisplay");
@@ -105,10 +105,40 @@ function startLiveClock() {
     setInterval(() => {
         const now = new Date();
         
-        // ঘড়ির সময় ফরম্যাট (HH:MM:SS AM/PM)
+        // ঘড়ির সময় ফরম্যাট (HH:MM:SS AM/PM)
         let hours = now.getHours();
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12; // 0 কে 12 এ
+        hours = hours ? hours : 12; // 0 কে 12 এ কনভার্ট করা হলো
+        
+        const timeString = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+        
+        // তারিখ ফরম্যাট (DD-MM-YYYY)
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const dateString = `${day}-${month}-${year}`;
+
+        liveTimeElem.innerText = timeString;
+        liveDateElem.innerText = dateString;
+    }, 1000);
+}
+
+/**
+ * ইউজার লগআউট হ্যান্ডলার
+ */
+function logoutUser() {
+    sessionStorage.clear();
+    localStorage.removeItem("loggedInUser");
+    if (typeof firebase !== 'undefined' && firebase.auth()) {
+        firebase.auth().signOut().then(() => {
+            window.location.href = "index.html";
+        }).catch(() => {
+            window.location.href = "index.html";
+        });
+    } else {
+        window.location.href = "index.html";
+    }
+}
