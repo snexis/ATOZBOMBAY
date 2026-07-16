@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AtoZ Bombay - Player Login</title>
+    <title>AtoZ Bombay - Premium Player Portal</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
@@ -13,59 +13,175 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        .login-viewport-v56 { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; font-family: sans-serif; }
-        .login-card-v56 { background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,255,200,0.2); width: 100%; max-width: 400px; border: 1px solid #334155; text-align: center; }
-        .login-card-v56 h2 { color: #00ffc8; margin-bottom: 20px; font-size: 24px; text-transform: uppercase; }
-        .input-group-v56 { margin-bottom: 15px; text-align: left; }
-        .input-group-v56 label { display: block; color: #94a3b8; margin-bottom: 5px; font-size: 14px; }
-        .input-group-v56 input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 16px; box-sizing: border-box; }
-        .btn-login-v56 { width: 100%; padding: 12px; background: #00ffc8; border: none; border-radius: 6px; color: #0f172a; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .error-message { color: #ef4444; font-size: 14px; margin-top: 10px; display: none; }
+        /* ইন্টারন্যাশনাল গেমিং থিম UI */
+        body.login-viewport-v56 { 
+            margin: 0; padding: 0; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; min-height: 100vh; 
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden;
+        }
+        /* টপ স্ক্রোলিং নোটিস বোর্ড */
+        .top-notice-bar {
+            position: fixed; top: 0; left: 0; width: 100%; background: #00ffc8; 
+            color: #0f172a; padding: 8px 0; font-weight: bold; font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0, 255, 200, 0.3); z-index: 999;
+        }
+        /* গর্জিয়াস কার্ড ডিজাইন */
+        .login-card-v56 { 
+            background: rgba(30, 41, 59, 0.7); padding: 40px 30px; border-radius: 16px; 
+            box-shadow: 0 0 30px rgba(0, 255, 200, 0.15); width: 90%; max-width: 380px; 
+            border: 1px solid rgba(0, 255, 200, 0.2); text-align: center; 
+            backdrop-filter: blur(10px); position: relative; margin-top: 40px;
+        }
+        /* অ্যানিমেটেড নিয়ন হেডিং */
+        .login-card-v56 h2 { 
+            color: #00ffc8; margin-bottom: 5px; font-size: 26px; 
+            text-transform: uppercase; letter-spacing: 1.5px;
+            animation: neonPulse 2s infinite alternate;
+        }
+        @keyframes neonPulse {
+            from { text-shadow: 0 0 5px #00ffc8, 0 0 10px #00ffc8; }
+            to { text-shadow: 0 0 15px #00ffc8, 0 0 25px #00ffc8; }
+        }
+        /* ভার্সন ট্যাগ */
+        .version-tag { color: #64748b; font-size: 12px; margin-bottom: 25px; font-weight: 600; }
+        
+        .input-group-v56 { margin-bottom: 18px; text-align: left; position: relative; }
+        .input-group-v56 label { display: block; color: #94a3b8; margin-bottom: 6px; font-size: 13px; font-weight: 500; }
+        .input-group-v56 input { 
+            width: 100%; padding: 12px 40px 12px 12px; border-radius: 8px; 
+            border: 1px solid #475569; background: rgba(15, 23, 42, 0.6); color: #fff; 
+            font-size: 16px; box-sizing: border-box; transition: 0.3s;
+        }
+        .input-group-v56 input:focus { border-color: #00ffc8; outline: none; box-shadow: 0 0 8px rgba(0, 255, 200, 0.3); }
+        
+        /* চোখ বাটন */
+        .eye-toggle-btn {
+            position: absolute; right: 12px; top: 35px; cursor: pointer;
+            color: #64748b; font-size: 18px; user-select: none;
+        }
+        .eye-toggle-btn:hover { color: #00ffc8; }
+        
+        /* চেকবক্স */
+        .remember-wrapper { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; color: #94a3b8; font-size: 13px; }
+        .remember-wrapper input { margin-right: 8px; accent-color: #00ffc8; cursor: pointer; }
+        
+        /* স্টাইলিশ ক্লিক বাটন */
+        .btn-login-v56 { 
+            width: 100%; padding: 14px; background: #00ffc8; border: none; border-radius: 8px; 
+            color: #0f172a; font-size: 16px; font-weight: bold; cursor: pointer; 
+            transition: all 0.2s ease; letter-spacing: 0.5px;
+        }
+        .btn-login-v56:hover { background: #00d9a6; box-shadow: 0 0 15px rgba(0,255,200,0.6); }
+        .btn-login-v56:active { background: #047857; color: #fff; } /* ক্লিকের পর গ্রিন হয়ে যাবে */
+        
+        .error-message { color: #ef4444; font-size: 14px; margin-top: 12px; display: none; font-weight: 500; }
     </style>
 </head>
 <body class="login-viewport-v56">
 
+    <div class="top-notice-bar">
+        <marquee id="liveNoticeBar" scrollamount="4">লোড হচ্ছে...</marquee>
+    </div>
+
     <div class="login-card-v56">
         <h2>ATOZ BOMBAY LOGIN</h2>
+        <div class="version-tag">Portal v5.6 [Stable]</div>
+        
         <form id="playerLoginForm">
             <div class="input-group-v56">
                 <label for="playerId">প্লেয়ার আইডি (Player ID):</label>
-                <input type="text" id="playerId" required placeholder="ID লিখুন">
+                <input type="text" id="playerId" required placeholder="আইডি টাইপ করুন">
             </div>
+            
             <div class="input-group-v56">
                 <label for="playerPin">পিন কোড (PIN Code):</label>
-                <input type="password" id="playerPin" required placeholder="4 ডিজিট পিন">
+                <input type="password" id="playerPin" required placeholder="৪ ডিজিট পিন">
+                <span id="togglePinEye" class="eye-toggle-btn">👁️</span>
             </div>
+            
+            <div class="remember-wrapper">
+                <input type="checkbox" id="rememberPlayer">
+                <label for="rememberPlayer">আইডি মনে রাখুন (Remember ID)</label>
+            </div>
+            
             <button type="submit" class="btn-login-v56">লগইন করুন</button>
-            <div id="loginError" class="error-message">ভুল আইডি অথবা পিন!</div>
+            <div id="loginError" class="error-message">ভুল আইডি অথবা পিন! আবার চেষ্টা করুন।</div>
         </form>
     </div>
 
     <script>
+        // ১. চোখের আইকন দিয়ে পিন দেখা/লুকানোর লজিক
+        const pinInput = document.getElementById('playerPin');
+        const eyeBtn = document.getElementById('togglePinEye');
+        
+        eyeBtn.addEventListener('click', function() {
+            if (pinInput.type === 'password') {
+                pinInput.type = 'text';
+                eyeBtn.innerText = '🔒';
+            } else {
+                pinInput.type = 'password';
+                eyeBtn.innerText = '👁️';
+            }
+        });
+
+        // ২. ফায়ারবেস নোটিস বোর্ড লাইভ সিঙ্ক ফাংশন
+        document.addEventListener("DOMContentLoaded", () => {
+            // রিমেম্বার আইডি থাকলে আগে বসানো
+            const savedId = localStorage.getItem("rememberedPlayerId");
+            if(savedId) {
+                document.getElementById('playerId').value = savedId;
+                document.getElementById('rememberPlayer').checked = true;
+            }
+
+            // নোটিস রিড করা
+            if (window.db) {
+                window.db.ref('notice').on('value', (snapshot) => {
+                    const noticeText = snapshot.val();
+                    document.getElementById('liveNoticeBar').innerText = noticeText ? noticeText : "AtoZ Bombay গেম জোনে আপনাকে স্বাগতম!";
+                });
+            }
+        });
+
+        // ৩. ডাইনামিক মাল্টিপ্লেয়ার লগইন সাবমিট লজিক
         document.getElementById('playerLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const id = document.getElementById('playerId').value.trim();
             const pin = document.getElementById('playerPin').value.trim();
+            const rememberMe = document.getElementById('rememberPlayer').checked;
             const errorDiv = document.getElementById('loginError');
 
             if (!window.db) {
-                alert("ফায়ারবেস কানেক্ট হচ্ছে, অনুগ্রহ করে ১ সেকেন্ড অপেক্ষা করুন!");
+                alert("ফায়ারবেস কানেক্ট হচ্ছে, অনুগ্রহ করে একটু অপেক্ষা করুন!");
                 return;
             }
 
-            window.db.ref('players/' + id).once('value').then((snapshot) => {
+            // মেন্টর ফিক্স: মাল্টিপ্লেয়ার ডাইনামিক ইউজার কুয়েরি
+            window.db.ref(id).once('value').then((snapshot) => {
                 const playerData = snapshot.val();
-                if (playerData && playerData.pin === pin && playerData.status === 'active') {
-                    localStorage.setItem("loggedInUser", JSON.stringify({ id: id, name: playerData.name }));
+                
+                // পাসওয়ার্ড এবং স্ট্যাটাস চেক
+                if (playerData && playerData.password === pin && playerData.status === 'active') {
+                    // রিমেম্বার আইডি স্টোর
+                    if(rememberMe) {
+                        localStorage.setItem("rememberedPlayerId", id);
+                    } else {
+                        localStorage.removeItem("rememberedPlayerId");
+                    }
+
+                    localStorage.setItem("loggedInUser", JSON.stringify({ id: id, name: id }));
+                    
                     firebase.auth().signInAnonymously().then(() => {
-                        window.location.href = "dashboard.html"; // সোজা ড্যাশবোর্ডে চালান
+                        window.location.href = "dashboard.html"; 
                     });
                 } else {
                     errorDiv.style.display = 'block';
+                    errorDiv.innerText = playerData && playerData.status !== 'active' ? "আপনার অ্যাকাউন্টটি ব্লক করা আছে!" : "ভুল আইডি অথবা পিন!";
                 }
             }).catch((err) => {
                 console.error(err);
                 errorDiv.style.display = 'block';
+                errorDiv.innerText = "সার্ভার কানেকশন এরর!";
             });
         });
     </script>
