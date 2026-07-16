@@ -1,5 +1,5 @@
 // ==========================================================================
-// ATOZ BOMBAY - GAME ENGINE (v5.5 - DYNAMIC MODES, LIMITS & THERMAL PRINT)
+// ATOZ BOMBAY - GAME ENGINE (v5.6 - DYNAMIC MODES, INTEGRATED VIEWPORT)
 // ==========================================================================
 
 // আপনার আসল ২২০টি পাত্তি এবং তার সমপরিমাণ ওয়ার্ড ম্যাপিং ডেটাবেজ (সম্পূর্ণ অপরিবর্তিত)
@@ -54,11 +54,11 @@ const COLUMNS_WORD = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 let selectedPatti = null;
 let selectedWord = null;
 let selectedColumn = null;
-let selectedType = null; // 'Patti' অথবা 'Single'
-let gameMode = 'Both';   // 'Digit', 'Word', বা 'Both' (এডমিন দ্বারা পরিবর্তিত হবে)
+let selectedType = null; 
+let gameMode = 'Both';   
 
 /**
- * ১. ডাইনামিকালি গেম টেবিল জেনারেট করার ফাংশন (সিঙ্গেল ঘর ও এডমিন মোডসহ)
+ * ১. ডাইনামিকালি গেম টেবিল জেনারেট করার ফাংশন
  */
 function generateGameTable(mode = 'Both') {
     gameMode = mode;
@@ -69,7 +69,7 @@ function generateGameTable(mode = 'Both') {
                     <thead>
                         <tr>`;
     
-    // মোড অনুযায়ী কলাম হেডার তৈরি
+    // মোড অনুযায়ী কলাম হেডার
     COLUMNS_DIGIT.forEach((col, index) => {
         let headerText = '';
         if (gameMode === 'Digit') {
@@ -77,7 +77,7 @@ function generateGameTable(mode = 'Both') {
         } else if (gameMode === 'Word') {
             headerText = `Col ${COLUMNS_WORD[index]}`;
         } else {
-            headerText = `Col ${col} - ${COLUMNS_WORD[index]}`;
+            headerText = `${col} - ${COLUMNS_WORD[index]}`;
         }
         html += `<th>${headerText}</th>`;
     });
@@ -86,7 +86,7 @@ function generateGameTable(mode = 'Both') {
                     </thead>
                     <tbody>`;
 
-    // সিঙ্গেল ডিজিট/ওয়ার্ডের বিশেষ রো (যা হেডার ফাইলের নিচে থাকবে)
+    // সিঙ্গেল ডিজিট/ওয়ার্ডের বিশেষ রো
     html += `<tr class="single-row-header">`;
     COLUMNS_DIGIT.forEach((col, index) => {
         let singleVal = '';
@@ -113,7 +113,7 @@ function generateGameTable(mode = 'Both') {
     });
     html += `</tr>`;
 
-    // ২২টি পাত্তি/ওয়ার্ড রো তৈরি করার লুপ
+    // ২২টি পাত্তি/ওয়ার্ড রো তৈরি করার লুপ
     for (let rowIndex = 0; rowIndex < 22; rowIndex++) {
         html += `<tr>`;
         COLUMNS_DIGIT.forEach((col, index) => {
@@ -156,6 +156,8 @@ function selectPattiCell(cellElement) {
         previouslySelected.classList.remove('selected');
     }
 
+    // যদি এটি আগে থেকেই ওভারলিমিট লাল হয়ে থাকে, তবে ক্লিক করার সাথে সাথে রিসেট করা হবে
+    cellElement.classList.remove('overlimit-red');
     cellElement.classList.add('selected');
 
     // ডাটা রিসিভ করা
@@ -170,52 +172,49 @@ function selectPattiCell(cellElement) {
         selectedWord = cellElement.getAttribute('data-word');
     }
 
-    // স্ক্রিনে ডিসপ্লে দেখানো
+    // স্ক্রিনে ডিসপ্লে আপডেট
     const displayElement = document.getElementById('selectedPattiDisplay');
     if (displayElement) {
         if (selectedType === 'Single') {
             displayElement.innerHTML = `<span class="badge-single">সিঙ্গেল ঘর: [ ${selectedPatti} ] (কলাম ${selectedColumn})</span>`;
         } else {
-            displayElement.innerHTML = `<span class="badge-patti">পাত্তি: [ ${selectedPatti} ] | ওয়ার্ড: [ ${selectedWord} ] (কলাম ${selectedColumn})</span>`;
+            displayElement.innerHTML = `<span class="badge-patti">পাত্তি: [ ${selectedPatti} ] | ওয়ার্ড: [ ${selectedWord} ] (কলাম ${selectedColumn})</span>`;
         }
     }
 
-    // নতুন অ্যামাউন্ট বসানোর পর চেক করার জন্য ইনপুট লিসেনার আপডেট
-    checkBetLimit();
+    // ঘর বদলানোর সাথে সাথে কারেন্ট ইনপুটের লিমিট ইনস্ট্যান্ট রি-চেক করা
+    runLimitCheck();
 }
 
 /**
- * ৩. প্লেয়ারের বাজেট ও লাল ওয়ার্নিং চেক করার ফাংশন
- * ৫ টাকার বেশি অ্যামাউন্ট হলেই ঘর লাল হয়ে যাবে
+ * ৩. প্লেয়ারের বাজেট ও লাল ওয়ার্নিং চেক করার কোর লজিক
  */
-function checkBetLimit() {
+function runLimitCheck() {
     const betInput = document.getElementById('betAmountInput');
-    const activeCell = document.querySelector('.patti-cell.selected');
+    const activeCell = document.querySelector('.patti-cell.selected') || document.querySelector('.patti-cell.overlimit-red');
     if (!betInput || !activeCell) return;
 
-    betInput.addEventListener('input', function() {
-        const val = parseFloat(this.value) || 0;
-        
-        // সিঙ্গেলে ১০০০ পর্যন্ত লিমিট, পাত্তিতে সর্বোচ্চ ৫ টাকা লিমিট
-        if (selectedType === 'Patti') {
-            if (val > 5.0) {
-                activeCell.classList.add('overlimit-red');
-                activeCell.classList.remove('selected');
-            } else {
-                activeCell.classList.remove('overlimit-red');
-                activeCell.classList.add('selected');
-            }
+    const val = parseFloat(betInput.value) || 0;
+    
+    if (selectedType === 'Patti') {
+        // পাত্তিতে সর্বোচ্চ ৫ টাকা লিমিট
+        if (val > 5.0) {
+            activeCell.classList.add('overlimit-red');
+            activeCell.classList.remove('selected');
         } else {
-            // সিঙ্গেলের বেলায় লিমিট ১০০০
-            if (val > 1000.0) {
-                activeCell.classList.add('overlimit-red');
-                activeCell.classList.remove('selected');
-            } else {
-                activeCell.classList.remove('overlimit-red');
-                activeCell.classList.add('selected');
-            }
+            activeCell.classList.remove('overlimit-red');
+            activeCell.classList.add('selected');
         }
-    });
+    } else if (selectedType === 'Single') {
+        // সিঙ্গেলের বেলায় সর্বোচ্চ ১০০০ টাকা লিমিট
+        if (val > 1000.0) {
+            activeCell.classList.add('overlimit-red');
+            activeCell.classList.remove('selected');
+        } else {
+            activeCell.classList.remove('overlimit-red');
+            activeCell.classList.add('selected');
+        }
+    }
 }
 
 /**
@@ -232,23 +231,20 @@ function printThermalReceipt(receiptData) {
           ATOZ BOMBAY           
 --------------------------------
 তারিখ: ${receiptData.date}
-সময়: ${receiptData.time}
-প্লেয়ার আইডি: ${receiptData.playerId}
+সময়: ${receiptData.time}
+প্লেয়ার আইডি: ${receiptData.playerId}
 --------------------------------
 টাইপ: ${receiptData.type}
 ঘর: ${receiptData.target}
-পয়েন্ট: ${receiptData.points} PTS
+পয়েন্ট: ${receiptData.points} PTS
 --------------------------------
      ধন্যবাদ এবং শুভকামনা!     
 --------------------------------
 \n\n`;
 
-    // ইউএসবি ও ব্লুটুথ প্রিন্টারে স্ট্যান্ডার্ড কাঁচা লেখা (RAW text) পাঠানো
     if (navigator.bluetooth) {
-        // ব্লুটুথ কানেকশন থাকলে প্রিন্ট হবে
         console.log("Bluetooth Thermal printing initiating...", receiptText);
     } else {
-        // উইন্ডোজ ইউএসবি প্রিন্টারের জন্য আইফ্রেম বা টেক্সট ফাইল প্রিন্ট মেথড
         const printWindow = window.open('', '_blank', 'width=300,height=400');
         printWindow.document.write('<pre>' + receiptText + '</pre>');
         printWindow.document.close();
@@ -257,7 +253,16 @@ function printThermalReceipt(receiptData) {
     }
 }
 
-// ৫. পেজ লোড সম্পন্ন হলে টেবিল তৈরি (ডিফল্ট Both মোড দিয়ে শুরু হবে)
+/**
+ * ৫. গ্লোবাল ইভেন্ট লিসেনার ইনিশিয়ালাইজেশন (মেমোরি লিক প্রোটেকশন সহ)
+ */
 document.addEventListener("DOMContentLoaded", () => {
+    // টেবিল তৈরি
     generateGameTable('Both');
+
+    // ইনপুট ফিল্ডে একবারই গ্লোবাল লিসেনার সেট করা হচ্ছে
+    const betInput = document.getElementById('betAmountInput');
+    if (betInput) {
+        betInput.addEventListener('input', runLimitCheck);
+    }
 });
