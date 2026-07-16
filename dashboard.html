@@ -28,10 +28,12 @@
                 <span class="icon">🎮</span>
                 <span data-i18n-key="btn_play_game">গেম খেলুন</span>
             </button>
+            
             <button type="button" class="menu-btn" onclick="openBox('withdrawBox')">
                 <span class="icon">💰</span>
                 <span data-i18n-key="btn_withdraw">টাকা তুলুন</span>
             </button>
+            
             <button type="button" class="menu-btn" onclick="openBox('historyBox')">
                 <span class="icon">📜</span>
                 <span data-i18n-key="btn_result">রেজাল্ট চার্ট</span>
@@ -53,6 +55,7 @@
                 <h2 id="welcomeHeading" data-i18n-key="welcome_title">স্বাগতম, প্লেয়ার!</h2>
                 <p id="welcomeSubtext" data-i18n-key="dashboard_sub">আপনার লাইভ গেমিং ড্যাশবোর্ড এখানে দেখুন।</p>
             </div>
+            
             <div class="balance-container-v56">
                 <div class="balance-card play-points">
                     <h4 data-i18n-key="play_points_label">প্লে পয়েন্ট (Play Point)</h4>
@@ -80,15 +83,19 @@
     <div id="withdrawBox" class="box-overlay">
         <div class="box-content">
             <div class="box-header">
-                <h3 data-i18n-key="btn_withdraw">💰 উইথড্র পয়েন্ট</h3>
+                <h3 data-i18n-key="btn_withdraw">💰 উইথड्रড পয়েন্ট (Withdraw)</h3>
                 <span class="close-box" onclick="closeBox('withdrawBox')">&times;</span>
             </div>
             <div class="box-body">
                 <div class="withdraw-balance-info">
                     <p>আপনার উইনিং ব্যালেন্স: <strong id="withdrawWinBalance">0</strong></p>
+                    <small class="withdraw-limit-text">* দৈনিক তোলার সীমা: ১০০ থেকে ১০০০ টাকা।</small>
                 </div>
                 <div id="withdrawStep1">
-                    <input type="number" id="withdrawAmount" placeholder="উইথড্র অ্যামাউন্ট লিখুন" min="100" max="1000">
+                    <div class="form-group">
+                        <label for="withdrawAmount">টাকার অ্যামাউন্ট লিখুন:</label>
+                        <input type="number" id="withdrawAmount" placeholder="উইথড্র অ্যামাউন্ট লিখুন" min="100" max="1000">
+                    </div>
                     <button type="button" id="sendWithdrawReqBtn" class="action-btn">অনুরোধ পাঠান</button>
                 </div>
             </div>
@@ -105,7 +112,7 @@
                 <div class="table-responsive">
                     <table>
                         <thead>
-                            <tr><th>Slot</th><th>Result</th></tr>
+                            <tr><th>समय (Time Slot)</th><th>উইনিং নাম্বার (Result)</th></tr>
                         </thead>
                         <tbody id="gameChartTableBody"></tbody>
                     </table>
@@ -115,10 +122,10 @@
     </div>
 
     <script>
-        // সেশন সিকিউরিটি চেক: লগইন না থাকলে সরাসরি তাড়িয়ে লগইন পেজে পাঠাও
+        // সিকিউরিটি গেটওয়ে: লগইন চেক (লুপ বন্ধের আসল দাওয়াই)
         const sessionUser = localStorage.getItem("loggedInUser");
         if (!sessionUser) {
-            window.location.href = "index.html";
+            window.location.href = "index.html"; // সেশন না থাকলে রিফ্রেশ না করে লগইনে পাঠাবে
         } else {
             const user = JSON.parse(sessionUser);
             document.addEventListener("DOMContentLoaded", () => {
@@ -140,7 +147,7 @@
             localStorage.removeItem("loggedInUser");
             if (typeof firebase !== 'undefined' && firebase.auth()) {
                 firebase.auth().signOut().then(() => {
-                    window.location.href = "index.html"; // লগইন পেজে ফেরত পাঠানো
+                    window.location.href = "index.html";
                 }).catch(() => {
                     window.location.href = "index.html";
                 });
