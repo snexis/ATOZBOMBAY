@@ -5,15 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AtoZ Bombay - Player Zone (v5.6)</title>
     
+    <!-- ==========================================
+         HIGH-SPEED FIREBASE CORE MODULES (cdnjs)
+         ========================================== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
 
+    <!-- PROJECT CONFIGURATION & STYLES -->
     <script src="firebase-config.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="player-page-v56">
 
+    <!-- PERMANENT GAMING SIDEBAR -->
     <aside class="gaming-sidebar">
         <div class="sidebar-logo" id="navLogoText" data-i18n-key="nav_logo">ATOZ BOMBAY</div>
         
@@ -49,6 +54,7 @@
         </div>
     </aside>
 
+    <!-- MAIN DASHBOARD CONTENT VIEWPORT -->
     <main class="main-content-viewport">
         
         <section class="welcome-box-v56">
@@ -69,6 +75,7 @@
             </div>
         </section>
 
+        <!-- GAME AREA OVERVIEW -->
         <section class="game-window-fullview" id="mainGameWindow">
             <div class="game-zone-header">
                 <h3 data-i18n-key="btn_play_game">🎮 প্লে গেম জোন</h3>
@@ -84,6 +91,7 @@
 
     </main>
 
+    <!-- OVERLAY POPUPS (WITHDRAWAL BOX) -->
     <div id="withdrawBox" class="box-overlay">
         <div class="box-content">
             <div class="box-header">
@@ -116,6 +124,7 @@
         </div>
     </div>
 
+    <!-- OVERLAY POPUPS (RESULT CHART BOX) -->
     <div id="historyBox" class="box-overlay">
         <div class="box-content medium-box">
             <div class="box-header">
@@ -132,15 +141,16 @@
                             </tr>
                         </thead>
                         <tbody id="gameChartTableBody">
-                            </tbody>
+                            <!-- Dynamic Content Injected By Engine -->
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- CORE INTERFACE MANAGEMENT -->
     <script>
-        // Modal popup management execution methods
         function openBox(boxId) {
             document.getElementById(boxId).style.display = 'flex';
         }
@@ -149,14 +159,12 @@
             document.getElementById(boxId).style.display = 'none';
         }
         
-        // Dynamic full-window switcher targeting the main game zone view
         function switchToGameView() {
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('playGameCard').classList.add('active');
             document.getElementById('mainGameWindow').style.display = 'block';
         }
 
-        // Authentication session tear-down interface fallback
         function handleLogout() {
             if (typeof firebase !== 'undefined' && firebase.auth()) {
                 firebase.auth().signOut().then(() => {
@@ -173,6 +181,7 @@
         }
     </script>
 
+    <!-- CORE GAME SCRIPTS -->
     <script src="game_engine.js"></script>
     <script src="player.js"></script>
 </body>
