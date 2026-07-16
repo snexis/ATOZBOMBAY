@@ -1,13 +1,16 @@
-# ==========================================
-# ATOZ BOMBAY - GIT IGNORE ARCHITECTURE (v4.9)
-# ==========================================
+# ==========================================================================
+# ATOZ BOMBAY - GIT IGNORE ARCHITECTURE (v5.6 - COMPLETE PROTECTION)
+# ==========================================================================
 
-# ওএস বা সিস্টেম জেনারেটেড ফাইল (যা সার্ভারে যাওয়ার প্রয়োজন নেই)
+# ১. ওএস বা সিস্টেম জেনারেটেড ফাইল (সিস্টেম পাথ ও আইপি ডিরেক্টরি হাইড রাখার জন্য)
 .DS_Store
 Thumbs.db
 desktop.ini
+$RECYCLE.BIN/
+*.bak
+*.tmp
 
-# এডিটর এবং আইডিই (IDE) কনফিগারেশন ফাইল
+# ২. এডিটর এবং আইডিই (IDE) কনফিগারেশন ফাইল (কোড স্ট্রাকচার ও লোকাল সেটিংস প্রটেকশন)
 .vscode/
 .idea/
 *.suo
@@ -15,24 +18,41 @@ desktop.ini
 *.njsproj
 *.sln
 *.swp
+*.workspace
+.buildpath
+.project
+.settings/
 
-# লোকাল এনভায়রনমেন্ট বা সিক্রেট ব্যাকআপ ফাইল
+# ৩. লোকাল এনভায়রনমেন্ট, এপিআই কি এবং সিক্রেট ব্যাকআপ ফাইল
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
+config/local.json
+config/secrets.json
+/drafts/
+/backups/
+/secrets/
+*credentials*.json
+*.pem
+*.key
+
+# ৪. ফায়ারবেস ক্যাশ, লোকাল ডিবাগিং এবং ডিপ্লয়মেন্ট লগ ফাইল
+.firebase/
+.firebaserc
+firestore.indexes.json
+firebase-debug.log*
+ui-debug.log*
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# ফায়ারবেস বা লোকাল ডিবাগিং ক্যাশ ও টেম্পোরারি ফাইল
-.firebase/
-firestore.indexes.json
-firebase-debug.log
-ui-debug.log
-
-# লোকাল টেস্টিং বা ড্রাফট স্ক্রিপ্ট ফাইল (যদি থাকে)
-/drafts/
-/backups/
+# ۵. নোড মডিউলস এবং বিল্ড ডিপেন্ডেন্সি (লোকাল সার্ভার রানার)
+node_modules/
+/dist/
+/build/
+.pnpm-store/
