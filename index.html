@@ -1,5 +1,5 @@
-<!-- FILE NAME: index.html | VERSION: v6.0 [Universal Ultra-Premium] | DATE: 2026-07-16 -->
-<!-- PURPOSE: Ultimate Player Portal with RGB Border Trace, Smart Day/Night Sync, Realtime Notice & Direct Path Tracking -->
+<!-- FILE NAME: index.html | VERSION: v6.1 [Ultra-Premium i18n] | DATE: 2026-07-16 -->
+<!-- PURPOSE: Ultimate Player Portal with RGB Border Trace, Smart Day/Night Sync, Realtime Notice, Case-Insensitive Login & i18n Support -->
 
 <!DOCTYPE html>
 <html lang="bn">
@@ -9,7 +9,7 @@
     <title>AtoZ Bombay - Premium Player Portal</title>
     
     <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDK -->
@@ -20,28 +20,28 @@
 
     <style>
         :root {
-            --bg-gradient: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1047, #0f172a);
-            --card-bg: rgba(30, 41, 59, 0.45);
+            --bg-gradient: linear-gradient(-45deg, #070b19, #0f172a, #1e1b4b, #210738);
+            --card-bg: rgba(15, 23, 42, 0.6);
             --text-main: #ffffff;
             --text-muted: #94a3b8;
             --primary-glow: #00ffc8;
             --btn-gradient: linear-gradient(135deg, #00ffc8, #00bfa5);
-            --input-bg: rgba(15, 23, 42, 0.6);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --accent-glow: rgba(0, 255, 200, 0.15);
+            --input-bg: rgba(10, 15, 30, 0.8);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-glow: rgba(0, 255, 200, 0.3);
         }
 
-        /* লাইট মোড ভ্যারিয়েবল (দিনের বেলার জন্য আরামদায়ক কালার স্কিম) */
+        /* দিনের আলোর জন্য লাইট থিম */
         [data-theme="light"] {
             --bg-gradient: linear-gradient(-45deg, #f1f5f9, #e2e8f0, #cbd5e1, #f1f5f9);
-            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.8);
             --text-main: #0f172a;
             --text-muted: #475569;
             --primary-glow: #0d9488;
             --btn-gradient: linear-gradient(135deg, #0d9488, #0f766e);
-            --input-bg: rgba(255, 255, 255, 0.9);
-            --border-color: rgba(15, 23, 42, 0.08);
-            --accent-glow: rgba(13, 148, 136, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(15, 23, 42, 0.15);
+            --accent-glow: rgba(13, 148, 136, 0.2);
         }
 
         body {
@@ -66,38 +66,39 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* ১. রিয়েলটাইম গ্লোবাল নোটিস বার (মোবাইল ফ্রেন্ডলি) */
+        /* ১. রিয়েলটাইম গ্লোবাল নোটিস বার */
         .notice-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(10, 15, 30, 0.9);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             color: var(--primary-glow);
             padding: 10px 0;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             z-index: 1000;
             display: flex;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .notice-title {
             background: var(--btn-gradient);
             color: #0f172a;
-            padding: 4px 12px;
-            font-size: 11px;
-            font-weight: 700;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 800;
             text-transform: uppercase;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-left: 15px;
             margin-right: 10px;
             white-space: nowrap;
-            box-shadow: 0 0 10px rgba(0, 255, 200, 0.3);
+            box-shadow: 0 0 10px var(--accent-glow);
+            letter-spacing: 1px;
         }
 
         .notice-content {
@@ -112,6 +113,7 @@
             padding-left: 100%;
             animation: marquee 25s linear infinite;
             color: var(--text-main);
+            font-size: 13px;
         }
 
         @keyframes marquee {
@@ -122,24 +124,24 @@
         /* ২. নিওন বর্ডার ট্রেসিং অ্যানিমেটেড লগইন কার্ড */
         .card-wrapper {
             position: relative;
-            width: 340px;
-            border-radius: 20px;
-            padding: 3px; /* আলোর রেখা দেখানোর জন্য গ্যাপ */
+            width: 350px;
+            border-radius: 24px;
+            padding: 3px;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-            margin-top: 50px; /* নোটিস বারের স্পেস দেওয়ার জন্য */
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+            margin-top: 60px;
         }
 
-        /* কার্ডের চারপাশের রানিং লাইট অ্যানিমেশন */
+        /* কার্ডের চারপাশের রানিং নিওন লাইট অ্যানিমেশন */
         .card-wrapper::before {
             content: '';
             position: absolute;
-            width: 150%;
-            height: 150%;
-            background: conic-gradient(from 0deg, transparent 40%, var(--primary-glow), transparent 60%);
-            top: -25%;
-            left: -25%;
-            animation: rotateBorder 4s linear infinite;
+            width: 160%;
+            height: 160%;
+            background: conic-gradient(from 0deg, transparent 30%, var(--primary-glow), transparent 50%, var(--primary-glow), transparent 70%);
+            top: -30%;
+            left: -30%;
+            animation: rotateBorder 3s linear infinite;
             z-index: 1;
         }
 
@@ -151,55 +153,58 @@
         .login-card {
             position: relative;
             background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 40px 30px;
-            border-radius: 17px; /* ভেতরের বর্ডার রেডিয়াস সামঞ্জস্যপূর্ণ করা */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 45px 35px;
+            border-radius: 21px;
             text-align: center;
             z-index: 2;
             transition: all 0.5s ease;
         }
 
         h2 {
-            margin: 0 0 5px 0;
-            font-size: 24px;
-            font-weight: 700;
+            margin: 0 0 6px 0;
+            font-size: 26px;
+            font-weight: 800;
             color: var(--primary-glow);
-            text-shadow: 0 0 10px var(--accent-glow);
-            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--accent-glow);
+            letter-spacing: 1.5px;
         }
 
         .subtitle {
             font-size: 11px;
             color: var(--text-muted);
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
+            font-weight: 700;
         }
 
-        /* ইনপুট গ্রুপ স্টাইল */
+        /* গর্জাস ইনপুট গ্রুপ স্টাইল */
         .input-group {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             text-align: left;
         }
 
         .input-group label {
             display: block;
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 600;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .input-field {
             width: 100%;
-            padding: 12px 15px;
+            padding: 14px 16px;
             background: var(--input-bg);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text-main);
             font-size: 14px;
+            font-weight: 600;
             box-sizing: border-box;
             transition: all 0.3s ease;
         }
@@ -207,24 +212,25 @@
         .input-field:focus {
             outline: none;
             border-color: var(--primary-glow);
-            box-shadow: 0 0 12px var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
+            background: rgba(10, 15, 30, 0.95);
         }
 
-        /* পাসওয়ার্ড দেখার আই বাটন */
+        /* পাসওয়ার্ড দেখানোর বাটন */
         .password-container {
             position: relative;
         }
 
         .eye-btn {
             position: absolute;
-            right: 12px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             padding: 0;
             transition: color 0.3s;
         }
@@ -237,10 +243,11 @@
         .checkbox-container {
             display: flex;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-muted);
+            font-weight: 600;
             user-select: none;
         }
 
@@ -249,12 +256,12 @@
         }
 
         .custom-checkmark {
-            height: 16px;
-            width: 16px;
+            height: 18px;
+            width: 18px;
             background: var(--input-bg);
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            margin-right: 8px;
+            border-radius: 6px;
+            margin-right: 10px;
             display: inline-block;
             position: relative;
             transition: all 0.3s;
@@ -263,19 +270,19 @@
         .checkbox-container input:checked + .custom-checkmark {
             background: var(--primary-glow);
             border-color: var(--primary-glow);
-            box-shadow: 0 0 8px var(--accent-glow);
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
         .custom-checkmark:after {
             content: "";
             position: absolute;
             display: none;
-            left: 5px;
+            left: 6px;
             top: 2px;
             width: 4px;
-            height: 8px;
+            height: 9px;
             border: solid #0f172a;
-            border-width: 0 2px 2px 0;
+            border-width: 0 2.5px 2.5px 0;
             transform: rotate(45deg);
         }
 
@@ -283,35 +290,36 @@
             display: block;
         }
 
-        /* রিয়েক্টিভ গ্লোয়িং লগইন বাটন */
+        /* গ্লোয়িং লগইন বাটন */
         .submit-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: var(--btn-gradient);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #0f172a;
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px var(--accent-glow);
+            box-shadow: 0 5px 20px var(--accent-glow);
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
+            letter-spacing: 0.5px;
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--primary-glow);
+            box-shadow: 0 8px 25px var(--primary-glow);
         }
 
         /* লোডার অ্যানিমেশন */
         .loader {
-            width: 16px;
-            height: 16px;
-            border: 2px solid #0f172a;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid #0f172a;
             border-bottom-color: transparent;
             border-radius: 50%;
             display: inline-block;
@@ -328,81 +336,82 @@
         /* এরর মেসেজ বক্স */
         .error-message {
             background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(239, 68, 68, 0.35);
             color: #f87171;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 18px;
             font-size: 13px;
+            font-weight: 600;
             display: none;
             text-align: center;
         }
 
-        /* ৩. ভাসমান ডে-নাইট মোড সুইচার */
+        /* থিম সুইচার */
         .theme-toggle {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(15, 23, 42, 0.8);
+            bottom: 25px;
+            right: 25px;
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid var(--border-color);
             color: var(--primary-glow);
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
             z-index: 1000;
             transition: all 0.3s ease;
         }
 
         .theme-toggle:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(15deg);
         }
 
-        /* ৪. মোবাইল রেসপন্সিভ মিডিয়া কোয়েরি */
+        /* রেসপন্সিভনেস */
         @media (max-width: 480px) {
             .card-wrapper {
                 width: 90%;
-                margin-top: 60px;
+                margin-top: 70px;
             }
             .login-card {
-                padding: 30px 20px;
+                padding: 35px 22px;
             }
             h2 {
-                font-size: 21px;
+                font-size: 22px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- ১. ডাইনামিক নোটিস বার -->
+    <!-- ১. ডাইনামিক নোটিস বার (i18n ফ্রেন্ডলি) -->
     <div class="notice-bar">
-        <span class="notice-title">ঘোষণা</span>
+        <span class="notice-title">ঘোষণা / Notice</span>
         <div class="notice-content">
-            <span class="notice-text" id="dbNoticeText">লোডিং হচ্ছে...</span>
+            <span class="notice-text" id="dbNoticeText">লোডিং হচ্ছে / Loading...</span>
         </div>
     </div>
 
-    <!-- ২. মেইন অ্যানিমেটেড লগইন প্যানেল -->
+    <!-- ২. নিওন বর্ডার ট্রেসিং লগইন কার্ড -->
     <div class="card-wrapper">
         <div class="login-card">
             <h2>ATOZ BOMBAY</h2>
-            <div class="subtitle">Portal v6.0 [Universal]</div>
+            <div class="subtitle">Portal v6.1 [Premium]</div>
 
             <form id="playerLoginForm">
                 <div class="input-group">
                     <label for="playerId">প্লেয়ার আইডি (Player ID):</label>
-                    <input type="text" id="playerId" class="input-field" placeholder="আইডি টাইপ করুন..." required autocomplete="off">
+                    <input type="text" id="playerId" class="input-field" placeholder="আইডি লিখুন (Enter ID)..." required autocomplete="off">
                 </div>
 
                 <div class="input-group">
                     <label for="playerPin">পিন কোড (PIN Code):</label>
                     <div class="password-container">
-                        <input type="password" id="playerPin" class="input-field" placeholder="পিন কোড লিখুন..." required>
+                        <input type="password" id="playerPin" class="input-field" placeholder="পিন লিখুন (Enter PIN)..." required>
                         <button type="button" id="togglePassword" class="eye-btn">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -417,7 +426,7 @@
 
                 <button type="submit" id="loginBtn" class="submit-btn">
                     <span class="loader" id="btnLoader"></span>
-                    <span id="btnText">লগইন করুন</span>
+                    <span id="btnText">লগইন করুন / Login</span>
                 </button>
             </form>
 
@@ -425,8 +434,8 @@
         </div>
     </div>
 
-    <!-- ৩. থিম টগল বাটন -->
-    <button class="theme-toggle" id="themeBtn" title="থিম পরিবর্তন করুন">
+    <!-- ৩. থিম সুইচার -->
+    <button class="theme-toggle" id="themeBtn" title="থিম পরিবর্তন করুন / Switch Theme">
         <i class="fa-solid fa-moon"></i>
     </button>
 
@@ -437,16 +446,13 @@
         const playerIdInput = document.getElementById('playerId');
         const themeBtn = document.getElementById('themeBtn');
 
-        // ১. অটোমেটিক সিস্টেম ব্রাইটনেস/থিম সনাক্তকরণ ও ম্যানুয়াল কন্ট্রোল
+        // ১. অটোমেটিক সিস্টেম ব্রাইটনেস এবং থিম সেটআপ
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
             if (savedTheme) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
                 updateThemeIcon(savedTheme);
             } else {
-                // সময়ের হিসাব অনুযায়ী অটোমেটিক থিম সেটআপ (সকাল ৬ টা থেকে সন্ধ্যা ৬ টা লাইট মোড, বাকি সময় নাইট মোড)
                 const hour = new Date().getHours();
                 const defaultTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', defaultTheme);
@@ -456,11 +462,7 @@
 
         function updateThemeIcon(theme) {
             const icon = themeBtn.querySelector('i');
-            if (theme === 'light') {
-                icon.className = 'fa-solid fa-sun';
-            } else {
-                icon.className = 'fa-solid fa-moon';
-            }
+            icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         }
 
         themeBtn.addEventListener('click', () => {
@@ -473,14 +475,14 @@
 
         initTheme();
 
-        // ২. রিয়েলটাইম নোটিস রিড করা (ফায়ারবেস ডেটাবেস থেকে)
+        // ২. রিয়েলটাইম নোটিস রিড (ফায়ারবেস ডেটাবেস থেকে)
         function loadRealtimeNotice() {
             const noticeRef = firebase.database().ref('notice');
             noticeRef.on('value', (snapshot) => {
                 const noticeData = snapshot.val();
-                document.getElementById('dbNoticeText').innerText = noticeData ? noticeData : "AtoZ Bombay প্লেয়ার পোর্টালে আপনাকে স্বাগতম!";
-            }, (error) => {
-                document.getElementById('dbNoticeText').innerText = "AtoZ Bombay প্লেয়ার পোর্টালে আপনাকে স্বাগতম!";
+                document.getElementById('dbNoticeText').innerText = noticeData ? noticeData : "AtoZ Bombay প্লেয়ার পোর্টালে আপনাকে স্বাগতম! / Welcome to AtoZ Bombay!";
+            }, () => {
+                document.getElementById('dbNoticeText').innerText = "AtoZ Bombay প্লেয়ার পোর্টালে আপনাকে স্বাগতম! / Welcome to AtoZ Bombay!";
             });
         }
 
@@ -494,7 +496,7 @@
             }
         });
 
-        // ৪. পাসওয়ার্ড শো/হাইড লজিক
+        // ৪. পাসওয়ার্ড শো/হাইড
         togglePasswordButton.addEventListener('click', () => {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
@@ -502,10 +504,12 @@
             icon.className = type === 'text' ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
         });
 
-        // ৫. ফাইনাল লগইন লজিক
+        // ৫. ফাইনাল লগইন লজিক (নিখুঁত কেস-সেন্সিটিভ ফিক্স সহ)
         document.getElementById('playerLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const id = playerIdInput.value.trim();
+            
+            // আইডিটিকে ছোট হাতের অক্ষরে রূপান্তর (toLowerCase) করে খোঁজা হচ্ছে
+            const id = playerIdInput.value.trim().toLowerCase();
             const pin = passwordInput.value.trim();
             const errorDiv = document.getElementById('loginError');
             const loginBtn = document.getElementById('loginBtn');
@@ -520,12 +524,12 @@
 
             // আইডি সেভ লজিক
             if (rememberMeCheckbox.checked) {
-                localStorage.setItem('savedPlayerId', id);
+                localStorage.setItem('savedPlayerId', playerIdInput.value.trim()); // ইউজার যেভাবে লিখেছে সেভাবেই সেভ হবে
             } else {
                 localStorage.removeItem('savedPlayerId');
             }
 
-            // অ্যানোনিমাস লগইন এবং সরাসরি `users/` ডিরেক্টরি চেক
+            // অ্যানোনিমাস লগইন এবং সরাসরি `users/` পাথ ডিরেক্টরি চেক
             firebase.auth().signInAnonymously().then(() => {
                 firebase.database().ref('users/' + id).once('value').then((snapshot) => {
                     const playerData = snapshot.val();
@@ -534,13 +538,13 @@
                         // সফল লগইন
                         window.location.href = "dashboard.html";
                     } else {
-                        showError("ভুল আইডি বা পিন!");
+                        showError("ভুল আইডি বা পিন! / Wrong ID or PIN!");
                     }
                 }).catch(() => {
-                    showError("ডাটাবেস কানেকশন এরর!");
+                    showError("ডাটাবেস কানেকশন এরর! / Database Connection Error!");
                 });
             }).catch(() => {
-                showError("কানেকশন এরর!");
+                showError("কানেকশন এরর! / Connection Error!");
             });
 
             function showError(message) {
@@ -548,7 +552,7 @@
                 errorDiv.innerText = message;
                 loginBtn.style.pointerEvents = 'auto';
                 btnLoader.style.display = 'none';
-                btnText.innerText = "লগইন করুন";
+                btnText.innerText = "লগইন করুন / Login";
                 firebase.auth().signOut();
             }
         });
