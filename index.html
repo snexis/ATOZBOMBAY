@@ -3,186 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AtoZ Bombay - Player Zone (v5.6)</title>
+    <title>AtoZ Bombay - Player Login</title>
     
-    <!-- ==========================================
-         HIGH-SPEED FIREBASE CORE MODULES (cdnjs)
-         ========================================== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
 
-    <!-- PROJECT CONFIGURATION & STYLES -->
     <script src="firebase-config.js"></script>
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .login-viewport-v56 { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; font-family: sans-serif; }
+        .login-card-v56 { background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,255,200,0.2); width: 100%; max-width: 400px; border: 1px solid #334155; text-align: center; }
+        .login-card-v56 h2 { color: #00ffc8; margin-bottom: 20px; font-size: 24px; text-transform: uppercase; }
+        .input-group-v56 { margin-bottom: 15px; text-align: left; }
+        .input-group-v56 label { display: block; color: #94a3b8; margin-bottom: 5px; font-size: 14px; }
+        .input-group-v56 input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 16px; box-sizing: border-box; }
+        .btn-login-v56 { width: 100%; padding: 12px; background: #00ffc8; border: none; border-radius: 6px; color: #0f172a; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .error-message { color: #ef4444; font-size: 14px; margin-top: 10px; display: none; }
+    </style>
 </head>
-<body class="player-page-v56">
+<body class="login-viewport-v56">
 
-    <!-- PERMANENT GAMING SIDEBAR -->
-    <aside class="gaming-sidebar">
-        <div class="sidebar-logo" id="navLogoText" data-i18n-key="nav_logo">ATOZ BOMBAY</div>
-        
-        <div class="sidebar-live-clock">
-            <span class="live-indicator-dot"></span>
-            <div id="liveTimeDisplay" class="clock-text">00:00:00 AM</div>
-            <div id="liveDateDisplay" class="date-text">00-00-0000</div>
-        </div>
-
-        <nav class="sidebar-menu">
-            <button type="button" class="menu-btn active" id="playGameCard" onclick="switchToGameView()">
-                <span class="icon">🎮</span>
-                <span data-i18n-key="btn_play_game">গেম খেলুন</span>
-            </button>
-            
-            <button type="button" class="menu-btn" onclick="openBox('withdrawBox')">
-                <span class="icon">💰</span>
-                <span data-i18n-key="btn_withdraw">টাকা তুলুন</span>
-            </button>
-            
-            <button type="button" class="menu-btn" onclick="openBox('historyBox')">
-                <span class="icon">📜</span>
-                <span data-i18n-key="btn_result">রেজাল্ট চার্ট</span>
-            </button>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="user-profile-tag">
-                <span class="user-icon">👤</span>
-                <span id="playerNameDisplay">---</span>
+    <div class="login-card-v56">
+        <h2>ATOZ BOMBAY LOGIN</h2>
+        <form id="playerLoginForm">
+            <div class="input-group-v56">
+                <label for="playerId">প্লেয়ার আইডি (Player ID):</label>
+                <input type="text" id="playerId" required placeholder="ID লিখুন">
             </div>
-            <button type="button" id="playerLogoutBtn" class="logout-btn-v56" onclick="handleLogout()">লগআউট</button>
-        </div>
-    </aside>
-
-    <!-- MAIN DASHBOARD CONTENT VIEWPORT -->
-    <main class="main-content-viewport">
-        
-        <section class="welcome-box-v56">
-            <div class="welcome-text-group">
-                <h2 id="welcomeHeading" data-i18n-key="welcome_title">স্বাগতম, প্লেয়ার!</h2>
-                <p id="welcomeSubtext" data-i18n-key="dashboard_sub">আপনার লাইভ গেমিং ড্যাশবোর্ড এখানে দেখুন।</p>
+            <div class="input-group-v56">
+                <label for="playerPin">পিন কোড (PIN Code):</label>
+                <input type="password" id="playerPin" required placeholder="4 ডিজিট পিন">
             </div>
-            
-            <div class="balance-container-v56">
-                <div class="balance-card play-points">
-                    <h4 data-i18n-key="play_points_label">প্লে পয়েন্ট (Play Point)</h4>
-                    <p id="playPointsDisplay">0</p> 
-                </div>
-                <div class="balance-card win-points">
-                    <h4 data-i18n-key="win_points_label">উইনিং পয়েন্ট (Win Point)</h4>
-                    <p id="winPointsDisplay">0</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- GAME AREA OVERVIEW -->
-        <section class="game-window-fullview" id="mainGameWindow">
-            <div class="game-zone-header">
-                <h3 data-i18n-key="btn_play_game">🎮 প্লে গেম জোন</h3>
-            </div>
-            <div class="game-zone-body">
-                <div id="gameControlsWrapper"></div>
-                
-                <div id="printerOptionContainer" class="printer-option-container" style="margin: 10px 0; padding: 8px 12px; background: #1e293b; border-radius: 6px;"></div>
-                
-                <div class="game-table-wrapper" id="gameTableWrapper"></div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- OVERLAY POPUPS (WITHDRAWAL BOX) -->
-    <div id="withdrawBox" class="box-overlay">
-        <div class="box-content">
-            <div class="box-header">
-                <h3 data-i18n-key="btn_withdraw">💰 উইথড্র পয়েন্ট (Withdraw)</h3>
-                <span class="close-box" onclick="closeBox('withdrawBox')">&times;</span>
-            </div>
-            <div class="box-body">
-                <div class="withdraw-balance-info">
-                    <p><span data-i18n-key="withdraw_win_balance">আপনার উইনিং ব্যালেন্স:</span> <strong id="withdrawWinBalance">0</strong></p>
-                    <small class="withdraw-limit-text">* দৈনিক তোলার সীমা: ১০০ থেকে ১০০০ টাকা।</small>
-                </div>
-
-                <div id="withdrawStep1">
-                    <div class="form-group">
-                        <label for="withdrawAmount">টাকার অ্যামাউন্ট লিখুন:</label>
-                        <input type="number" id="withdrawAmount" data-i18n-key="withdraw_amount_placeholder" placeholder="উইথড্র অ্যামাউন্ট লিখুন" min="100" max="1000">
-                    </div>
-                    <button type="button" id="sendWithdrawReqBtn" class="action-btn">অনুরোধ পাঠান (Send Request)</button>
-                </div>
-
-                <div id="withdrawStep2" style="display: none; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
-                    <p class="status-pending">💡 আপনার অনুরোধ অ্যাডমিন প্যানেলে পাঠানো হয়েছে। ওটিপি (OTP) কোডের জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
-                    <div class="form-group">
-                        <label for="withdrawOtpCode">অ্যাডমিনের দেওয়া OTP কোডটি লিখুন:</label>
-                        <input type="text" id="withdrawOtpCode" placeholder="Enter OTP/Code">
-                    </div>
-                    <button type="button" id="confirmWithdrawBtn" class="action-btn confirm-btn">কনফার্ম করুন (Confirm Code)</button>
-                </div>
-            </div>
-        </div>
+            <button type="submit" class="btn-login-v56">লগইন করুন</button>
+            <div id="loginError" class="error-message">ভুল আইডি অথবা পিন!</div>
+        </form>
     </div>
 
-    <!-- OVERLAY POPUPS (RESULT CHART BOX) -->
-    <div id="historyBox" class="box-overlay">
-        <div class="box-content medium-box">
-            <div class="box-header">
-                <h3 data-i18n-key="btn_result">📜 লাইভ গেম রেজাল্ট চার্ট</h3>
-                <span class="close-box" onclick="closeBox('historyBox')">&times;</span>
-            </div>
-            <div class="box-body">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th id="thTime">समय (Time Slot)</th>
-                                <th id="thResult">উইনিং নাম্বার (Result)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gameChartTableBody">
-                            <!-- Dynamic Content Injected By Engine -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- CORE INTERFACE MANAGEMENT -->
     <script>
-        function openBox(boxId) {
-            document.getElementById(boxId).style.display = 'flex';
-        }
-        
-        function closeBox(boxId) {
-            document.getElementById(boxId).style.display = 'none';
-        }
-        
-        function switchToGameView() {
-            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('playGameCard').classList.add('active');
-            document.getElementById('mainGameWindow').style.display = 'block';
-        }
+        document.getElementById('playerLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('playerId').value.trim();
+            const pin = document.getElementById('playerPin').value.trim();
+            const errorDiv = document.getElementById('loginError');
 
-        function handleLogout() {
-            if (typeof firebase !== 'undefined' && firebase.auth()) {
-                firebase.auth().signOut().then(() => {
-                    sessionStorage.clear();
-                    localStorage.removeItem("loggedInUser");
-                    window.location.href = "index.html";
-                }).catch((error) => {
-                    console.error("Logout Error: ", error);
-                    window.location.href = "index.html";
-                });
-            } else {
-                window.location.href = "index.html";
+            if (!window.db) {
+                alert("ফায়ারবেস কানেক্ট হচ্ছে, অনুগ্রহ করে ১ সেকেন্ড অপেক্ষা করুন!");
+                return;
             }
-        }
-    </script>
 
-    <!-- CORE GAME SCRIPTS -->
-    <script src="game_engine.js"></script>
-    <script src="player.js"></script>
+            window.db.ref('players/' + id).once('value').then((snapshot) => {
+                const playerData = snapshot.val();
+                if (playerData && playerData.pin === pin && playerData.status === 'active') {
+                    localStorage.setItem("loggedInUser", JSON.stringify({ id: id, name: playerData.name }));
+                    firebase.auth().signInAnonymously().then(() => {
+                        window.location.href = "dashboard.html"; // সোজা ড্যাশবোর্ডে চালান
+                    });
+                } else {
+                    errorDiv.style.display = 'block';
+                }
+            }).catch((err) => {
+                console.error(err);
+                errorDiv.style.display = 'block';
+            });
+        });
+    </script>
 </body>
 </html>
