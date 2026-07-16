@@ -33,7 +33,7 @@ if (!allowedDomains.includes(currentHostname)) {
     firebase.initializeApp(firebaseConfig);
   }
   
-  // গ্লোবাল উইন্ডো অবজেক্টে সেটআপ (যাতে game_engine.js বা অন্য ফাইল সরাসরি পায়)
+  // মেন্টর ফিক্স: উইন্ডো অবজেক্ট এবং গ্লোবাল অবজেক্ট নিশ্চিত করা (সার্ভার এরর ফিক্স)
   window.auth = firebase.auth();
   window.db = firebase.database();
   
@@ -45,7 +45,10 @@ if (!allowedDomains.includes(currentHostname)) {
  * ফায়ারবেস রিয়েলটাইম ডেটাবেজ থেকে লাইভ সেটিংস সিঙ্ক করার ফাংশন
  */
 function initFirebaseLiveSync() {
-  if (!window.db) return;
+  // মেন্টর ফিক্স: যদি কোনো কারণে window.db লোড হতে দেরি হয়, সরাসরি ফায়ারবেস অবজেক্ট ব্যাকআপ হিসেবে কাজ করবে
+  if (!window.db) {
+    window.db = firebase.database();
+  }
 
   const settingsRef = window.db.ref("system_settings");
 
