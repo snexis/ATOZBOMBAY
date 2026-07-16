@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtoZ Bombay - Player Zone (v5.6)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
+
+    <script src="firebase-config.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="player-page-v56">
+
+    <aside class="gaming-sidebar">
+        <div class="sidebar-logo" id="navLogoText" data-i18n-key="nav_logo">ATOZ BOMBAY</div>
+        
+        <div class="sidebar-live-clock">
+            <span class="live-indicator-dot"></span>
+            <div id="liveTimeDisplay" class="clock-text">00:00:00 AM</div>
+            <div id="liveDateDisplay" class="date-text">00-00-0000</div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <button type="button" class="menu-btn active" id="playGameCard" onclick="switchToGameView()">
+                <span class="icon">🎮</span>
+                <span data-i18n-key="btn_play_game">গেম খেলুন</span>
+            </button>
+            <button type="button" class="menu-btn" onclick="openBox('withdrawBox')">
+                <span class="icon">💰</span>
+                <span data-i18n-key="btn_withdraw">টাকা তুলুন</span>
+            </button>
+            <button type="button" class="menu-btn" onclick="openBox('historyBox')">
+                <span class="icon">📜</span>
+                <span data-i18n-key="btn_result">রেজাল্ট চার্ট</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-tag">
+                <span class="user-icon">👤</span>
+                <span id="playerNameDisplay">---</span>
+            </div>
+            <button type="button" id="playerLogoutBtn" class="logout-btn-v56" onclick="handleLogout()">লগআউট</button>
+        </div>
+    </aside>
+
+    <main class="main-content-viewport">
+        <section class="welcome-box-v56">
+            <div class="welcome-text-group">
+                <h2 id="welcomeHeading" data-i18n-key="welcome_title">স্বাগতম, প্লেয়ার!</h2>
+                <p id="welcomeSubtext" data-i18n-key="dashboard_sub">আপনার লাইভ গেমিং ড্যাশবোর্ড এখানে দেখুন।</p>
+            </div>
+            <div class="balance-container-v56">
+                <div class="balance-card play-points">
+                    <h4 data-i18n-key="play_points_label">প্লে পয়েন্ট (Play Point)</h4>
+                    <p id="playPointsDisplay">0</p> 
+                </div>
+                <div class="balance-card win-points">
+                    <h4 data-i18n-key="win_points_label">উইনিং পয়েন্ট (Win Point)</h4>
+                    <p id="winPointsDisplay">0</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="game-window-fullview" id="mainGameWindow">
+            <div class="game-zone-header">
+                <h3 data-i18n-key="btn_play_game">🎮 প্লে গেম জোন</h3>
+            </div>
+            <div class="game-zone-body">
+                <div id="gameControlsWrapper"></div>
+                <div id="printerOptionContainer" class="printer-option-container" style="margin: 10px 0; padding: 8px 12px; background: #1e293b; border-radius: 6px;"></div>
+                <div class="game-table-wrapper" id="gameTableWrapper"></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="withdrawBox" class="box-overlay">
+        <div class="box-content">
+            <div class="box-header">
+                <h3 data-i18n-key="btn_withdraw">💰 উইথড্র পয়েন্ট</h3>
+                <span class="close-box" onclick="closeBox('withdrawBox')">&times;</span>
+            </div>
+            <div class="box-body">
+                <div class="withdraw-balance-info">
+                    <p>আপনার উইনিং ব্যালেন্স: <strong id="withdrawWinBalance">0</strong></p>
+                </div>
+                <div id="withdrawStep1">
+                    <input type="number" id="withdrawAmount" placeholder="উইথড্র অ্যামাউন্ট লিখুন" min="100" max="1000">
+                    <button type="button" id="sendWithdrawReqBtn" class="action-btn">অনুরোধ পাঠান</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyBox" class="box-overlay">
+        <div class="box-content medium-box">
+            <div class="box-header">
+                <h3 data-i18n-key="btn_result">📜 লাইভ গেম রেজাল্ট চার্ট</h3>
+                <span class="close-box" onclick="closeBox('historyBox')">&times;</span>
+            </div>
+            <div class="box-body">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Slot</th><th>Result</th></tr>
+                        </thead>
+                        <tbody id="gameChartTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // সেশন সিকিউরিটি চেক: লগইন না থাকলে সরাসরি তাড়িয়ে লগইন পেজে পাঠাও
+        const sessionUser = localStorage.getItem("loggedInUser");
+        if (!sessionUser) {
+            window.location.href = "index.html";
+        } else {
+            const user = JSON.parse(sessionUser);
+            document.addEventListener("DOMContentLoaded", () => {
+                if(document.getElementById('playerNameDisplay')) {
+                    document.getElementById('playerNameDisplay').innerText = user.id;
+                }
+            });
+        }
+
+        function openBox(boxId) { document.getElementById(boxId).style.display = 'flex'; }
+        function closeBox(boxId) { document.getElementById(boxId).style.display = 'none'; }
+        function switchToGameView() {
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('playGameCard').classList.add('active');
+            document.getElementById('mainGameWindow').style.display = 'block';
+        }
+
+        function handleLogout() {
+            localStorage.removeItem("loggedInUser");
+            if (typeof firebase !== 'undefined' && firebase.auth()) {
+                firebase.auth().signOut().then(() => {
+                    window.location.href = "index.html"; // লগইন পেজে ফেরত পাঠানো
+                }).catch(() => {
+                    window.location.href = "index.html";
+                });
+            } else {
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+
+    <script src="game_engine.js"></script>
+    <script src="player.js"></script>
+</body>
+</html>
