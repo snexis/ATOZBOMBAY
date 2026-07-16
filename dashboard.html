@@ -50,6 +50,10 @@
     </aside>
 
     <main class="main-content-viewport">
+        <div class="dashboard-notice-wrapper" style="background: #00ffc8; color: #0f172a; padding: 8px; font-weight: bold; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,255,200,0.2);">
+            <marquee id="dashLiveNotice" scrollamount="4">লোড হচ্ছে...</marquee>
+        </div>
+
         <section class="welcome-box-v56">
             <div class="welcome-text-group">
                 <h2 id="welcomeHeading" data-i18n-key="welcome_title">স্বাগতম, প্লেয়ার!</h2>
@@ -122,21 +126,55 @@
     </div>
 
     <script>
-        // সিকিউরিটি গেটওয়ে: লগইন চেক (লুপ বন্ধের আসল দাওয়াই)
+        // সিকিউরিটি গেটওয়ে: লগইন চেক
         const sessionUser = localStorage.getItem("loggedInUser");
+        let currentUserId = "";
+
         if (!sessionUser) {
-            window.location.href = "index.html"; // সেশন না থাকলে রিফ্রেশ না করে লগইনে পাঠাবে
+            window.location.href = "index.html"; 
         } else {
             const user = JSON.parse(sessionUser);
+            currentUserId = user.id;
             document.addEventListener("DOMContentLoaded", () => {
                 if(document.getElementById('playerNameDisplay')) {
-                    document.getElementById('playerNameDisplay').innerText = user.id;
+                    document.getElementById('playerNameDisplay').innerText = currentUserId;
                 }
+                // ফায়ারবেস লোড হওয়ার পর ডেটা সিঙ্ক চালু করা
+                const checkFirebase = setInterval(() => {
+                    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                        startLiveSync();
+                        clearInterval(checkFirebase);
+                    }
+                }, 500);
+            });
+        }
+
+        // মেন্টর ফিক্স: লাইভ ফায়ারবেস সিঙ্ক ফাংশন (মাল্টিপ্লেয়ার ব্যালেন্স এবং নোটিস)
+        function startLiveSync() {
+            if(!currentUserId) return;
+
+            // ১. নির্দিষ্ট লগইন করা প্লেয়ারের লাইভ ডেটা (পয়েন্ট) শোনা
+            firebase.database().ref(currentUserId).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    // প্লে পয়েন্ট এবং উইনিং পয়েন্ট আপডেট
+                    // আপনার ডেটাবেসের ফিল্ডের নাম অনুযায়ী এগুলো (যেমন: playPoints) সিঙ্ক হবে
+                    document.getElementById('playPointsDisplay').innerText = data.playPoints || 0;
+                    document.getElementById('winPointsDisplay').innerText = data.winPoints || 0;
+                    document.getElementById('withdrawWinBalance').innerText = data.winPoints || 0;
+                }
+            });
+
+            // ২. গ্লোবাল নোটিস বোর্ড লাইভ শোনা
+            firebase.database().ref('notice').on('value', (snapshot) => {
+                const noticeText = snapshot.val();
+                document.getElementById('dashLiveNotice').innerText = noticeText ? noticeText : "AtoZ Bombay গেম জোনে আপনাকে স্বাগতম!";
             });
         }
 
         function openBox(boxId) { document.getElementById(boxId).style.display = 'flex'; }
         function closeBox(boxId) { document.getElementById(boxId).style.display = 'none'; }
+        
         function switchToGameView() {
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('playGameCard').classList.add('active');
