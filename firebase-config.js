@@ -1,5 +1,5 @@
 // ==========================================================================
-// ATOZ BOMBAY - FIREBASE CONFIGURATION & SECURITY GATE (v5.0 - LIVE SYNC)
+// ATOZ BOMBAY - FIREBASE CONFIGURATION & SECURITY GATE (v5.6 - COMPAT MODE)
 // ==========================================================================
 
 // ফায়ারবেস কনফিগারেশন অবজেক্ট (অপরিবর্তিত)
@@ -14,12 +14,11 @@ const firebaseConfig = {
   measurementId: "G-8ENRFZRWLP"
 };
 
-// সিকিউরিটি গেটওয়ে: অনুমোদিত ডোমেন চেক (snexis.github.io অথবা local development)
+// সিকিউরিটি গেটওয়ে: অনুমোদিত ডোমেন চেক
 const allowedDomains = ["snexis.github.io", "localhost", "127.0.0.1"];
 const currentHostname = window.location.hostname;
 
 if (!allowedDomains.includes(currentHostname)) {
-  // অননুমোদিত ডোমেন হলে ফায়ারবেস ইনিশিয়ালাইজ-ই হবে না এবং পেজ লক হবে
   document.addEventListener("DOMContentLoaded", () => {
     document.body.innerHTML = `
       <div style="color:#ff0055; text-align:center; margin-top:20vh; font-family:sans-serif; text-shadow: 0 0 10px rgba(255,0,85,0.5);">
@@ -29,43 +28,42 @@ if (!allowedDomains.includes(currentHostname)) {
   });
   throw new Error("Security Alert: Unauthorized domain access blocked.");
 } else {
-  // ডোমেন সঠিক থাকলে তবেই ফায়ারবেস ইনিশিয়ালাইজ হবে
+  // ডোমেন ঠিক থাকলে ফায়ারবেস অ্যাপ ইনিশিয়ালাইজ হবে (Compat Version Syntax)
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   
-  // গ্লোবাল উইন্ডো অবজেক্টে সেটআপ
+  // গ্লোবাল উইন্ডো অবজেক্টে সেটআপ (যাতে game_engine.js বা অন্য ফাইল সরাসরি পায়)
   window.auth = firebase.auth();
   window.db = firebase.database();
   
-  // গেম ইঞ্জিন ও এডমিন সেটিংসে লাইভ কানেকশন সচল করা
+  // লাইভ সিঙ্ক ফাংশন চালু
   initFirebaseLiveSync();
 }
 
 /**
- * ফায়ারবেস থেকে লাইভ সেটিংস (গেম মোড, প্রিন্ট পারমিশন) সিঙ্ক করার ফাংশন
- * এটি আপনার game_engine.js এর generateGameTable() এর সাথে সরাসরি যুক্ত
+ * ফায়ারবেস রিয়েলটাইম ডেটাবেজ থেকে লাইভ সেটিংস সিঙ্ক করার ফাংশন
  */
 function initFirebaseLiveSync() {
   if (!window.db) return;
 
   const settingsRef = window.db.ref("system_settings");
 
-  // এডমিন প্যানেল থেকে কোনো পরিবর্তন হলেই সাথে সাথে গেম আপডেট হবে
+  // ডাটাবেজে কোনো চেঞ্জ হলেই লাইভ রিড হবে
   settingsRef.on("value", (snapshot) => {
     const data = snapshot.val();
     if (!data) return;
 
-    // ১. গেম মোড সিঙ্ক (Digit, Word, Both)
+    // ১. গেম মোড আপডেট (Digit / Word / Both)
     if (data.gameMode && typeof generateGameTable === "function") {
-      console.log(`[Firebase] Game Mode Synced: ${data.gameMode}`);
+      console.log(`[Firebase v5.6] Game Mode Synced: ${data.gameMode}`);
       generateGameTable(data.gameMode);
     }
 
-    // ২. থার্মাল প্রিন্ট পারমিশন সিঙ্ক
+    // ২. থার্মাল প্রিন্ট পারমিশন আপডেট
     if (data.printAllowedByAdmin !== undefined) {
       window.printAllowedByAdmin = data.printAllowedByAdmin;
-      console.log(`[Firebase] Print Permission: ${window.printAllowedByAdmin}`);
+      console.log(`[Firebase v5.6] Print Permission: ${window.printAllowedByAdmin}`);
     }
   });
 }
