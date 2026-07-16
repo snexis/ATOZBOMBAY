@@ -133,7 +133,7 @@
                 document.getElementById('rememberPlayer').checked = true;
             }
             
-            // ফায়ারবেস লোড হওয়া পর্যন্ত ১ সেকেন্ড পর পর চেক করবে
+            // ফায়ারবেস লোড হওয়া পর্যন্ত চেক করবে
             const checkFirebase = setInterval(() => {
                 if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
                     initNoticeListener();
@@ -142,7 +142,7 @@
             }, 500);
         });
 
-        // সাবমিট লজিক
+        // "লোহা কপাট" সিকিউরিটি লজিক (৩ বার ভুল পিন দিলে ব্লক সিস্টেম)
         document.getElementById('playerLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const id = document.getElementById('playerId').value.trim();
@@ -151,34 +151,101 @@
             const errorDiv = document.getElementById('loginError');
 
             if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
-                alert("ফায়ারবেস এখনও কানেক্ট হচ্ছে, অনুগ্রহ করে একটু অপেক্ষা করুন!");
+                alert("ফায়ারবেস এখনও কানেক্ট হচ্ছে, অনুগ্রহ করে একটু অপেক্ষা করুন!");
                 return;
             }
 
-            // মেন্টর ফিক্স: সরাসরি ফায়ারবেস অবজেক্ট থেকে ডাইনামিক কল
-            firebase.database().ref(id).once('value').then((snapshot) => {
-                const playerData = snapshot.val();
+            // ১. ব্রাউজারের লোকাল মেমোরিতে এই আইডির ভুলের ট্র্যাকার চেক করা
+            let attempts = parseInt(localStorage.getItem("attempts_" + id)) || 0;
+            let lockTime = localStorage.getItem("lockTime_" + id);
+
+            // ২৪ ঘণ্টার লক রুলস চেক করা (লোকাল লেভেল)
+            if (lockTime) {
+                const hoursLeft = (new Date().getTime() - parseInt(lockTime)) / (1000 * 60 * 60);
+                if (hoursLeft < 24) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerText = "নিরাপত্তার স্বার্থে আপনার আইডিটি সাময়িকভাবে লক করা আছে। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন!";
+                    return;
+                } else {
+                    // ২৪ ঘণ্টা পার হলে অটো রিসেট
+                    localStorage.removeItem("attempts_" + id);
+                    localStorage.removeItem("lockTime_" + id);
+                    attempts = 0;
+                }
+            }
+
+            // ২. ফায়ারবেসে সিকিউর কানেকশন শুরু
+            firebase.auth().signInAnonymously().then(() => {
                 
-                if (playerData && playerData.password === pin && playerData.status === 'active') {
-                    if(rememberMe) {
-                        localStorage.setItem("rememberedPlayerId", id);
-                    } else {
-                        localStorage.removeItem("rememberedPlayerId");
+                // ৩. ডেটাবেস থেকে প্লেয়ার আইডি খোঁজা
+                firebase.database().ref(id).once('value').then((snapshot) => {
+                    const playerData = snapshot.val();
+                    
+                    if (!playerData) {
+                        // আইডি যদি ডেটাবেসেই না থাকে
+                        firebase.auth().signOut();
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerText = "ভুল আইডি অথবা পিন!";
+                        return;
                     }
 
-                    localStorage.setItem("loggedInUser", JSON.stringify({ id: id, name: id }));
-                    
-                    firebase.auth().signInAnonymously().then(() => {
+                    // ৪. ডেটাবেসে প্লেয়ারটি অলরেডি ব্লকড কি না যাচাই করা (সার্ভার লেভেল লক)
+                    if (playerData.status !== 'active') {
+                        firebase.auth().signOut();
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerText = "আপনার অ্যাকাউন্টটি ব্লক করা আছে! অ্যাডমিনের সাথে যোগাযোগ করুন।";
+                        return;
+                    }
+
+                    // ৫. পাসওয়ার্ড বা পিন ম্যাচ করানো
+                    if (playerData.password === pin) {
+                        // সফলভাবে লগইন হলে ভুলের কাউন্টার রিসেট
+                        localStorage.removeItem("attempts_" + id);
+                        localStorage.removeItem("lockTime_" + id);
+
+                        if(rememberMe) {
+                            localStorage.setItem("rememberedPlayerId", id);
+                        } else {
+                            localStorage.removeItem("rememberedPlayerId");
+                        }
+
+                        localStorage.setItem("loggedInUser", JSON.stringify({ id: id, name: id }));
                         window.location.href = "dashboard.html"; 
-                    });
-                } else {
+                    } else {
+                        // ভুল পিন দিলে কাউন্টার বাড়ানো
+                        attempts++;
+                        localStorage.setItem("attempts_" + id, attempts);
+
+                        if (attempts >= 3) {
+                            // ৩ বার ভুল হলে ব্রাউজার ও ডেটাবেস লেভেলে লক করা
+                            localStorage.setItem("lockTime_" + id, new Date().getTime());
+                            
+                            // ফায়ারবেস ডেটাবেসে স্ট্যাটাস আপডেট এবং লকের কারণ লিখে পাঠানো
+                            firebase.database().ref(id).update({
+                                status: "blocked",
+                                lockReason: "Too many wrong PIN attempts"
+                            }).then(() => {
+                                firebase.auth().signOut();
+                                errorDiv.style.display = 'block';
+                                errorDiv.innerText = "৩ বার ভুল পিন দেওয়ার কারণে আইডিটি লক হয়ে গেছে! অ্যাডমিন আনলক না করা পর্যন্ত প্রবেশ নিষেধ।";
+                            });
+                        } else {
+                            firebase.auth().signOut();
+                            errorDiv.style.display = 'block';
+                            errorDiv.innerText = `ভুল পিন! আর মাত্র ${3 - attempts} বার ভুল করলে আইডি লক হয়ে যাবে।`;
+                        }
+                    }
+                }).catch((err) => {
+                    console.error(err);
+                    firebase.auth().signOut();
                     errorDiv.style.display = 'block';
-                    errorDiv.innerText = playerData && playerData.status !== 'active' ? "আপনার অ্যাকাউন্টটি ব্লক করা আছে!" : "ভুল আইডি অথবা পিন!";
-                }
-            }).catch((err) => {
-                console.error(err);
+                    errorDiv.innerText = "সার্ভার কানেকশন এরর!";
+                });
+
+            }).catch((authErr) => {
+                console.error(authErr);
                 errorDiv.style.display = 'block';
-                errorDiv.innerText = "সার্ভার কানেকশন এরর!";
+                errorDiv.innerText = "অথেন্টিকেশন এরর! আবার চেষ্টা করুন।";
             });
         });
     </script>
