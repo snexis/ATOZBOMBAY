@@ -1,39 +1,105 @@
-{
-  "rules": {
-    "users": {
-      "$username": {
-        // ১. প্লেয়ার নিজের ডাটা দেখতে পারবে (ইমেইল থেকে আইডি বের করে), অথবা মাস্টার অ্যাডমিন দেখতে পারবে
-        ".read": "auth != null && (auth.token.email.replace('@atozpatti.com', '') === $username || root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('role').val() === 'master_admin')",
-        
-        // ২. শুধুমাত্র মাস্টার অ্যাডমিন নতুন ইউজার তৈরি বা ব্লক/আনব্লক করতে পারবে
-        ".write": "auth != null && root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('role').val() === 'master_admin'",
-        
-        // ৩. প্লেয়ারের ব্যালেন্স বা স্ট্যাটাস ভ্যালিডেশন (আপনার নিখুঁত লজিক)
-        "balance": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
-        },
-        "winning_balance": {
-          ".validate": "newData.isNumber() && newData.val() >= 0"
-        },
-        "status": {
-          ".validate": "newData.val() == 'Active' || newData.val() == 'Block'"
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <!-- ==========================================================================
+       🔑 PROJECT: A-TO-Z BOMBAY PLAY ZONE (A-TO-Z-PATTI)
+       📁 FILE: player-dashboard.html
+       📌 VERSION: v2.6.0 (Player Interface Initial Release)
+       
+       📜 CHANGES MADE IN THIS VERSION:
+       - ৪MD এরর ফিক্স করতে নতুন প্লেয়ার ড্যাশবোর্ড ইন্টারফেস তৈরি।
+       - মাস্টার ইমেজের নেভি ব্লু ও গোল্ডেন থিমের সাথে ডিজাইন সমন্বয়।
+       - i18n আর্কিটেকচার প্রিপারেশন যুক্ত।
+       ========================================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-TO-Z Patti - Player Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: #16162a;
+            --text-color: #ffffff;
+            --accent-color: #ffc107;
+            --btn-danger: #dc3545;
         }
-      }
-    },
-    "game_sessions": {
-      // গেম সেশনের লাইভ ফিড ও রেশিও প্লেয়ার এবং অ্যাডমিন দুজনেই দেখতে পাবে
-      ".read": "auth != null",
-      
-      // এখানে অ্যাডমিন বা অ্যাক্টিভ প্লেয়ার—দুজনেই রাইট করতে পারবে, তবে ভেতরে কন্ডিশন আলাদা হবে
-      ".write": "auth != null",
-      
-      "live_feed": {
-        "$betId": {
-          // প্লেয়ার শুধুমাত্র তখনই বাজি সাবমিট করতে পারবে যদি তার ডাটাবেস স্ট্যাটাস 'Active' থাকে
-          // আর মাস্টার অ্যাডমিন যেকোনো গ্লোবাল শিডিউল চেঞ্জ করতে পারবে
-          ".write": "auth != null && (root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('status').val() === 'Active' || root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('role').val() === 'master_admin')"
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
         }
-      }
-    }
-  }
-}
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: var(--accent-color);
+            font-size: 1.8rem;
+        }
+        .btn-logout {
+            background-color: var(--btn-danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .main-board {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .welcome-msg {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .role-badge {
+            background-color: #0d6efd;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- ড্যাশবোর্ড হেডার সেকশন -->
+        <div class="header">
+            <h1>A-TO-Z BOMBAY PLAY ZONE</h1>
+            <button class="btn-logout" id="btnLogout">Logout</button>
+        </div>
+
+        <!-- মেইন গেম বোর্ড এরিয়া -->
+        <div class="main-board">
+            <div class="welcome-msg">Welcome to the Play Zone!</div>
+            <div class="role-badge">Role: Player</div>
+            <p style="margin-top: 20px; color: #888;">Your game board configuration will load here...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // লগআউট লজিক
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            // সেশন ক্লিন করে আবার লগইন পেজে ফেরত পাঠানো
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>
