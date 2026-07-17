@@ -11,98 +11,488 @@
        - মাস্টার ইমেজের নেভি ব্লু ও গোল্ডেন থিমের সাথে ডিজাইন সমন্বয়।
        - i18n আর্কিটেকচার প্রিপারেশন যুক্ত।
        ========================================================================== -->
+    <!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A-TO-Z Patti - Player Dashboard</title>
+    <title>A-TO-Z Patti - Premium Player Dashboard</title>
+    <!-- ফন্ট অসম আইকন এবং গুগল ফন্ট -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #1a1a2e;
-            --card-bg: #16162a;
-            --text-color: #ffffff;
-            --accent-color: #ffc107;
-            --btn-danger: #dc3545;
+            --bg-dark-blue: #020617;
+            --bg-sidebar: #0b132b;
+            --bg-card: #0f172a;
+            --gold-bright: #ffc107;
+            --gold-glow: rgba(255, 193, 7, 0.4);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-white: #ffffff;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-dark-blue);
+            color: var(--text-white);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
+
+        /* ------------------ লেফট সাইডবার (Left Sidebar) ------------------ */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            justify-content: space-between;
         }
-        .header {
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .menu-item i { width: 20px; text-align: center; }
+        .menu-item:hover, .menu-item.active {
+            background-color: #1e293b;
+            color: var(--text-white);
+            border-left: 4px solid #3b82f6;
+        }
+        /* লাইভ ড্র স্ট্যাটাস বক্স */
+        .live-draw-box {
+            background: rgba(15, 23, 42, 0.6);
+            margin: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .live-pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            margin-right: 5px;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        /* ------------------ মেইন কন্টেন্ট এরিয়া ------------------ */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* টপ বার (Top Bar - ব্যালেন্স সেকশন) */
+        .topbar {
+            background-color: var(--bg-sidebar);
+            border-bottom: 2px solid #1e3a8a;
+            padding: 12px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: var(--card-bg);
-            padding: 15px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
         }
-        .header h1 {
-            margin: 0;
-            color: var(--accent-color);
-            font-size: 1.8rem;
-        }
+        .profile-section { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 35px; height: 35px; background: var(--gold-bright); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; }
+        
+        .stats-container { display: flex; gap: 30px; }
+        .stat-box { display: flex; align-items: center; gap: 10px; }
+        .stat-box i { color: var(--gold-bright); font-size: 1.3rem; }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; }
+        .stat-value { font-size: 1.1rem; font-weight: bold; }
+
         .btn-logout {
-            background-color: var(--btn-danger);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            background: transparent;
+            color: #f1f5f9;
+            border: 1px solid var(--border-color);
+            padding: 6px 15px;
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .main-board {
-            background-color: var(--card-bg);
-            padding: 40px;
+        .btn-logout:hover { background: #ef4444; border-color: #ef4444; }
+
+        /* ওয়ার্কস্পেস গ্রিড (বোর্ড + বেটিং প্যানেল) */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            overflow: hidden;
+            background-color: #0b0f19;
+        }
+
+        /* ------------------ মিডল গেমবোর্ড (Matrix Table) ------------------ */
+        .board-section {
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .board-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+        .control-group { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; }
+        .btn-ctrl { background: #1e293b; border: 1px solid var(--border-color); color: #fff; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-ctrl.active { background: #1d4ed8; border-color: #3b82f6; }
+
+        /* মেইন ম্যাট্রিক্স টেবিল ডিজাইন */
+        .table-responsive {
+            flex: 1;
+            background: var(--bg-card);
             border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 0.78rem;
         }
-        .welcome-msg {
-            font-size: 2rem;
-            margin-bottom: 10px;
+        th {
+            background-color: #1e293b;
+            color: var(--gold-bright);
+            padding: 6px;
+            position: sticky;
+            top: 0;
+            border: 1px solid var(--border-color);
+            font-weight: 600;
         }
-        .role-badge {
-            background-color: #0d6efd;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: inline-block;
+        td {
+            border: 1px solid var(--border-color);
+            padding: 4px 2px;
+            cursor: pointer;
+            vertical-align: top;
+            transition: background 0.15s;
+        }
+        td:hover { background-color: rgba(255,255,255,0.05); }
+        td.selected { background-color: #1d4ed8 !important; color: #fff !important; font-weight: bold; }
+        td.overlimit-red { background-color: #ef4444 !important; color: #fff !important; }
+        
+        .single-row-header { background-color: rgba(30, 41, 59, 0.5); font-weight: bold; }
+        .both-pat { color: #fff; display: block; }
+        .both-split { border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 2px 0; }
+        .both-wrd { color: #94a3b8; display: block; font-size: 0.72rem; }
+
+        /* ------------------ রাইট বেটিং প্যানেল ------------------ */
+        .betting-panel {
+            background-color: var(--bg-sidebar);
+            border-left: 1px solid var(--border-color);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        .panel-title {
+            font-size: 0.8rem;
+            background: #1e293b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            color: #cbd5e1;
+            letter-spacing: 0.5px;
+        }
+        .panel-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-bet-opt {
+            flex: 1;
+            min-width: 50px;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: #94a3b8;
+            padding: 6px 4px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-bet-opt.active {
+            background: #1e3a8a;
+            border-color: #3b82f6;
+            color: white;
+        }
+        .bet-input-box {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .selection-display {
+            background: #0f172a;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 50px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+        .action-buttons { display: flex; gap: 8px; margin-top: auto; }
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-reset { background: #475569; color: white; }
+        .btn-submit { background: #22c55e; color: white; }
+
+        /* নোটিশ বার */
+        .footer-notice {
+            background: #1e293b;
+            padding: 6px 20px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
         }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <!-- ড্যাশবোর্ড হেডার সেকশন -->
-        <div class="header">
-            <h1>A-TO-Z BOMBAY PLAY ZONE</h1>
-            <button class="btn-logout" id="btnLogout">Logout</button>
-        </div>
-
-        <!-- মেইন গেম বোর্ড এরিয়া -->
-        <div class="main-board">
-            <div class="welcome-msg">Welcome to the Play Zone!</div>
-            <div class="role-badge">Role: Player</div>
-            <p style="margin-top: 20px; color: #888;">Your game board configuration will load here...</p>
+    <!-- 1. লেফট সাইডবার মেনু (ইমেজ ৯৯৭৫ অনুযায়ী) -->
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li class="menu-item active"><i class="fa-solid fa-table-cells"></i> Play Board</li>
+            <li class="menu-item"><i class="fa-solid fa-wallet"></i> Withdraw Funds</li>
+            <li class="menu-item"><i class="fa-solid fa-file-invoice"></i> Transaction Report</li>
+            <li class="menu-item"><i class="fa-solid fa-money-check-dollar"></i> Account Balance</li>
+            <li class="menu-item"><i class="fa-solid fa-history"></i> Play History</li>
+            <li class="menu-item"><i class="fa-solid fa-square-poll-vertical"></i> Results</li>
+            <li class="menu-item"><i class="fa-solid fa-gear"></i> Settings</li>
+            <li class="menu-item"><i class="fa-solid fa-circle-question"></i> Help & Support</li>
+        </ul>
+        
+        <!-- লাইভ ড্র স্ট্যাটাস -->
+        <div class="live-draw-box">
+            <div style="font-size: 0.8rem; margin-bottom: 5px;"><span class="live-pulse"></span> Live Draw Status</div>
+            <div style="font-size: 0.7rem; color: #94a3b8;">Draw Time: <span style="color:#fff">01:25:30 PM</span></div>
+            <div style="font-size: 0.7rem; color: #94a3b8;">Draw ID: <span style="color:#fff">245678</span></div>
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">Next Draw: <span style="color:var(--gold-bright)">02:00 PM</span></div>
         </div>
     </div>
 
-   <script type="module">
-    // লগআউট লজিক
-    const logoutBtn = document.getElementById('btnLogout');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            // সেশন ক্লিন করে মেইন লগইন পেজে ফেরত পাঠানো হচ্ছে
-            window.location.href = "https://snexis.github.io/A-TO-Z-PATTI/index.html";
+    <!-- 2. ডানদিকের প্রধান কন্টেন্ট উইন্ডো -->
+    <div class="main-container">
+        
+        <!-- টপ বার (ব্যালেন্স ডিসপ্লে) -->
+        <div class="topbar">
+            <div class="profile-section">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div id="lblPlayerId">Profile: Loading...</div>
+            </div>
+            <div class="stats-container">
+                <div class="stat-box">
+                    <i class="fa-solid fa-wallet"></i>
+                    <div>
+                        <div class="stat-label">Play Balance</div>
+                        <div class="stat-value" id="txtPlayPoints">৳0</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <i class="fa-solid fa-trophy"></i>
+                    <div>
+                        <div class="stat-label">Winning Balance</div>
+                        <div class="stat-value" id="txtWinPoints" style="color: #22c55e;">৳0</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <i class="fa-solid fa-star"></i>
+                    <div>
+                        <div class="stat-label">Reward Points</div>
+                        <div class="stat-value" style="color: var(--gold-bright);">50</div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-logout" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+
+        <!-- ワークスペース (টেবিল এবং বেটিং প্যানেল সাইড-বাই-সাইড) -->
+        <div class="workspace">
+            
+            <!-- গেম বোর্ড ফিল্ড -->
+            <div class="board-section">
+                <div class="board-controls">
+                    <div class="control-group">
+                        <button class="btn-ctrl" style="background:#d97706;"><i class="fa-solid fa-print"></i> Print</button>
+                        <span style="color:#ef4444; font-weight:bold;"><span class="live-pulse"></span> LIVE</span>
+                    </div>
+                    <div class="control-group">
+                        <span>View By:</span>
+                        <button class="btn-ctrl active" onclick="changeMode('Both', this)">Both</button>
+                        <button class="btn-ctrl" onclick="changeMode('Word', this)">Word</button>
+                        <button class="btn-ctrl" onclick="changeMode('Digit', this)">Digit</button>
+                    </div>
+                </div>
+
+                <!-- ডায়নামিক ম্যাট্রিক্স টেবিল কন্টেনার -->
+                <div class="table-responsive" id="gameTableWrapper">
+                    <!-- টেবিল স্ক্রিপ্ট দ্বারা জেনারেট হবে -->
+                </div>
+            </div>
+
+            <!-- ডানদিকের বেটিং কন্ট্রোল প্যানেল -->
+            <div class="betting-panel">
+                <div>
+                    <div class="panel-title">Number Range</div>
+                    <div class="panel-row" style="margin-top:5px;">
+                        <div class="btn-bet-opt active" style="border-color:#22c55e;">A<br><small>1-25</small></div>
+                        <div class="btn-bet-opt" style="border-color:#3b82f6;">B<br><small>26-50</small></div>
+                        <div class="btn-bet-opt" style="border-color:#f97316;">C<br><small>51-75</small></div>
+                        <div class="btn-bet-opt" style="border-color:#a855f7;">D<br><small>76-100</small></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel-title">Bet Type</div>
+                    <div class="panel-row" style="margin-top:5px;">
+                        <button class="btn-bet-opt active" id="btnTypeSingle" onclick="selectBetType('Single')">Single</button>
+                        <button class="btn-bet-opt" id="btnTypeJora" onclick="selectBetType('Jora')">Jora</button>
+                        <button class="btn-bet-opt" id="btnTypeTriple" onclick="selectBetType('Triple')">Triple</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel-title">Bet Amount</div>
+                    <div class="panel-row" style="margin-top:5px; gap:4px;">
+                        <button class="btn-bet-opt" onclick="setAmount(10)">৳10</button>
+                        <button class="btn-bet-opt" onclick="setAmount(20)">৳20</button>
+                        <button class="btn-bet-opt" onclick="setAmount(50)">৳50</button>
+                        <button class="btn-bet-opt" onclick="setAmount(100)">৳100</button>
+                    </div>
+                    <input type="number" id="betAmountInput" class="bet-input-box" style="margin-top:8px;" placeholder="Enter custom amount">
+                </div>
+
+                <div>
+                    <div class="panel-title">Selected Items</div>
+                    <div class="selection-display" id="selectedPattiDisplay">
+                        Your selections will appear here
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-action btn-reset" onclick="resetSelection()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                    <button class="btn-action btn-submit"><i class="fa-solid fa-paper-plane"></i> Submit Bet</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ফুটার নোটিশ -->
+        <div class="footer-notice">
+            <i class="fa-solid fa-bullhorn" style="color:var(--gold-bright)"></i>
+            <span>Note: Please place your bet before the draw time.</span>
+        </div>
+    </div>
+
+    <!-- ফায়ারবেস ইন্টিগ্রেশন এবং আপনার কোরের গেম লজিক মার্জার -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { firebaseConfig } from "./firebase-config.js";
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        // ফায়ারবেস রিয়েল-টাইম ব্যালেন্স গেটওয়ে
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const username = user.email.split('@')[0];
+                document.getElementById('lblPlayerId').innerText = `Profile: ${username.toUpperCase()}`;
+
+                // রিয়েল-টাইম ডাটাবেস লিসেনার (অ্যাডমিন চেঞ্জ করলে সাথে সাথে আপডেট হবে)
+                const userRef = ref(database, `users/${username}`);
+                onValue(userRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        document.getElementById('txtPlayPoints').innerText = `৳${data.play_balance || "0"}`;
+                        document.getElementById('txtWinPoints').innerText = `৳${data.winning_balance || "0"}`;
+                    }
+                });
+            } else {
+                window.location.href = "https://snexis.github.io/A-TO-Z-PATTI/index.html";
+            }
         });
-    }
-</script>
+
+        // লগআউট প্রোটোকল
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = "https://snexis.github.io/A-TO-Z-PATTI/index.html";
+            });
+        });
+    </script>
+
+    <!-- আপনার কোর ইঞ্জিনের ফাংশন ফাইল লোডার -->
+    <script src="game_engine.js"></script>
+
+    <script>
+        // গেম ভিউ মোড পরিবর্তনকারীর গ্লোবাল ইন্টারফেস ব্রিজ
+        function changeMode(mode, btn) {
+            document.querySelectorAll('.board-controls .btn-ctrl').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (window.PlayerEngine && window.PlayerEngine.generateTable) {
+                window.PlayerEngine.generateTable(mode);
+            }
+        }
+
+        // বেটিং প্যানেলের শর্টকাট অ্যামাউন্ট হ্যান্ডলার
+        function setAmount(amt) {
+            const input = document.getElementById('betAmountInput');
+            if (input) {
+                input.value = amt;
+                // আপনার ইঞ্জিনের লিমিট চেকারকে পুশ করা
+                if (typeof runLimitCheck === "function") runLimitCheck();
+            }
+        }
+
+        // বেট টাইপ সিলেক্টর সুইচ
+        function selectBetType(type) {
+            document.querySelectorAll('[id^="btnType"]').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btnType${type}`).classList.add('active');
+        }
+
+        // সিলেকশন ক্লিয়ার করার গ্লোবাল ব্রিজ
+        function resetSelection() {
+            const display = document.getElementById('selectedPattiDisplay');
+            if (display) display.innerHTML = "Your selections will appear here";
+            const activeCell = document.querySelector('.patti-cell.selected') || document.querySelector('.patti-cell.overlimit-red');
+            if (activeCell) {
+                activeCell.classList.remove('selected');
+                activeCell.classList.remove('overlimit-red');
+            }
+            document.getElementById('betAmountInput').value = '';
+        }
+    </script>
 </body>
 </html>
