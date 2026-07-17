@@ -1,13 +1,16 @@
 // ==========================================================================
-// ATOZ BOMBAY - PLAYER ZONE CORE LOGIC (v5.6 - HYBRID SIDEBAR & THERMAL PRINT)
+// ATOZ BOMBAY - PLAYER ZONE CORE LOGIC (v7.2.0 - LIVE ENGAGED & RE-UPDATED)
+// MASTER RECALL CODE: #PZ-LOGIC-RECALL-2200
 // ==========================================================================
 
 // গেমপ্লে স্টেট ট্র্যাকিং এবং প্রিন্টার সেটিংস ভেরিয়েবল
-let activeBets = {}; // { 'cell_id': { patti, word, column, amount, type } }
-let currentGameMode = 'both'; 
-let selectedTimeSlot = null;  
+let activeBets = {}; // { 'cell_id': amount } -> আমাদের অ্যামাউন্ট অ্যাকুমুলেটর লজিক
+let cellDetails = {}; // সেলের বাকি মেটাডাটা ব্যাকআপ রাখার জন্য
+let currentBetType = 'Single'; // ডিফল্ট বেট টাইপ (সিঙ্গেল/জোড়া/ট্রিপল ফিল্টারের জন্য)
+let currentViewMode = 'Both';  // ডিফল্ট ভিউ মোড (Both/Word/Digit)
 let isPrinterAllowed = false; // অ্যাডমিন পারমিশন ফ্ল্যাগ (ফায়ারবেস থেকে লাইভ আসবে)
 let currentLanguage = 'bn'; // ডিফল্ট ভাষা
+let drawTimeLeft = 90; // ড্র টাইম লকের কাউন্টডাউন সেকেন্ড (সার্ভার মেকানিজম)
 
 // থার্মাল প্রিন্টিং কানেক্টিভিটি ভেরিয়েবল (USB & Bluetooth)
 let connectedUSBDevice = null;
@@ -25,11 +28,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // DOM এলিমেন্টসমূহ
     const playerNameDisplay = document.getElementById("playerNameDisplay");
     const playerLogoutBtn = document.getElementById("playerLogoutBtn");
-    const gameChartTableBody = document.getElementById("gameChartTableBody");
-
+    
+    // প্রোফাইল নেম ফিক্স (Loading সরিয়ে সরাসরি A01 বা ইউজারের নাম রিয়েল-টাইমে শো করা)
     if (playerNameDisplay) {
-        playerNameDisplay.innerText = currentUser.username;
+        playerNameDisplay.innerText = currentUser.username; // অ্যাডমিন থেকে সেট করা ইউনিক আইডি বা নাম
     }
+    const profileTextEl = document.querySelector(".profile-text") || document.getElementById("profileLoading");
+    if (profileTextEl) {
+        profileTextEl.innerText = "Profile: " + currentUser.username;
+    }
+
+    // লাইভ ডট ব্লিংকিং ইফেক্ট ও ডাইনামিক কাউন্টডাউন টাইমার চালু
+    const liveDot = document.querySelector(".dot") || document.querySelector(".live-dot");
+    if (liveDot) {
+        liveDot.classList.add("live-blink");
+    }
+    startDrawTimer();
 
     // ১. লাইভ ডেট ও সেকেন্ডসহ রিয়েল-টাইম ক্লক রান করা
     startLiveClock();
@@ -89,8 +103,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // বন্ধ হয়ে যাওয়া লগ আউট বাটন রি-কানেক্ট ও সচল করা
     if (playerLogoutBtn) {
         playerLogoutBtn.addEventListener("click", logoutUser);
+    }
+    const alternativeLogout = document.getElementById("logoutBtn");
+    if (alternativeLogout) {
+        alternativeLogout.addEventListener("click", logoutUser);
+    }
+
+    // সাবমিট বাটন অ্যাকশন ইভেন্ট কানেক্ট করা
+    const submitBtn = document.getElementById("submitBetBtn");
+    if (submitBtn) {
+        submitBtn.addEventListener("click", submitAllBets);
     }
 
     // গেম টেবিলে বাজির ঘর সিলেক্ট করার ইভেন্ট হ্যান্ডলার সচল করা
@@ -131,6 +156,51 @@ function startLiveClock() {
 }
 
 /**
+ * ডায়নামিক ড্র টাইমার ফাংশন (টাইম শেষ হলে লক হবে)
+ */
+function startDrawTimer() {
+    const timerDisplay = document.getElementById("drawTimeDisplay");
+    
+    const interval = setInterval(() => {
+        if (drawTimeLeft <= 0) {
+            clearInterval(interval);
+            if (timerDisplay) timerDisplay.innerText = "Draw Closed! Locking...";
+            lockBoard(true); // ড্র টাইম শেষ হলে বোর্ড লক হবে
+            
+            // সার্ভার ড্র রেসপন্স সিমুলেশন (৫ সেকেন্ড পর পরবর্তী ড্র ও টাইমার রিস্টার্ট)
+            setTimeout(() => {
+                drawTimeLeft = 90;
+                lockBoard(false);
+                startDrawTimer();
+            }, 5000);
+        } else {
+            let minutes = Math.floor(drawTimeLeft / 60);
+            let seconds = drawTimeLeft % 60;
+            if (timerDisplay) {
+                timerDisplay.innerText = `Draw Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+            drawTimeLeft--;
+        }
+    }, 1000);
+}
+
+/**
+ * বোর্ড লক/আনলক করার মেকানিজম
+ */
+function lockBoard(isLocked) {
+    const mainBoard = document.getElementById("gameChartTableBody") || document.getElementById("mainPlayBoard");
+    if (mainBoard) {
+        if (isLocked) {
+            mainBoard.style.pointerEvents = "none";
+            mainBoard.style.opacity = "0.4";
+        } else {
+            mainBoard.style.pointerEvents = "auto";
+            mainBoard.style.opacity = "1";
+        }
+    }
+}
+
+/**
  * ইউজার লগআউট সেশন ম্যানেজমেন্ট
  */
 function logoutUser() {
@@ -148,7 +218,7 @@ function logoutUser() {
 }
 
 /**
- * গ্লোবাল ডাইনামিক i18n অনুবাদক ইঞ্জিন (রিফ্রেশ ছাড়াই রিয়েল-টাইমে টেক্সট পরিবর্তন)
+ * গ্লোবাল ডাইনামিক i18n অনুবাদক ইঞ্জিন
  */
 function applyLanguage(lang) {
     currentLanguage = lang;
@@ -182,7 +252,6 @@ function applyLanguage(lang) {
 
     const dict = dictionary[lang] || dictionary['bn'];
 
-    // ১. data-i18n-key মেকানিজমে থাকা সব এলিমেন্টকে লুপ করে রিয়েল-টাইম অনুবাদ করা
     document.querySelectorAll('[data-i18n-key]').forEach(elem => {
         const key = elem.getAttribute('data-i18n-key');
         if (dict[key]) {
@@ -196,13 +265,12 @@ function applyLanguage(lang) {
 }
 
 /**
- * থার্মাল প্রিন্টার ইন্টিগ্রেশন কন্ট্রোল প্যানেল (সবসময় স্ক্রিনে থাকবে)
+ * থার্মাল প্রিন্টার ইন্টিগ্রেশন কন্ট্রোল প্যানেল
  */
 function initializePrinterSetupUI() {
     const container = document.getElementById("printerOptionContainer");
     if (!container) return;
 
-    // নিয়ন গেমিং ইন্টারফেসের সাথে সামঞ্জস্য রেখে সাব-কন্ট্রোল তৈরি
     container.innerHTML = `
         <div class="printer-setup-box" style="display: flex; flex-direction: column; gap: 8px; font-family: sans-serif; color: #fff; font-size: 13px;">
             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; padding-bottom: 5px;">
@@ -210,13 +278,11 @@ function initializePrinterSetupUI() {
                 <span id="printerStatusBadge" style="background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">OFFLINE (ADMIN LOCKED)</span>
             </div>
             
-            <!-- Connection Buttons (Always Visible) -->
             <div style="display: flex; gap: 8px;">
                 <button type="button" id="btnConnectUSB" onclick="connectUSBPrinter()" style="flex: 1; padding: 6px; background: #0ea5e9; border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 11px; font-weight: bold;">🔌 Connect USB</button>
                 <button type="button" id="btnConnectBT" onclick="connectBluetoothPrinter()" style="flex: 1; padding: 6px; background: #a855f7; border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 11px; font-weight: bold;">🔵 Connect Bluetooth</button>
             </div>
 
-            <!-- Auto-Print Trigger Checkbox -->
             <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                 <input type="checkbox" id="printReceiptCheckbox" style="cursor: pointer;" checked>
                 <label for="printReceiptCheckbox" style="cursor: pointer; user-select: none;">সাকসেস সাবমিটে রসিদ প্রিন্ট করুন (Auto-Print Slip)</label>
@@ -225,9 +291,6 @@ function initializePrinterSetupUI() {
     `;
 }
 
-/**
- * অ্যাডমিন লক পরিবর্তনের ভিত্তিতে ইউজার ইন্টারফেসে লাইভ ফিডব্যাক
- */
 function updatePrinterPermissionStatusUI() {
     const badge = document.getElementById("printerStatusBadge");
     if (!badge) return;
@@ -245,24 +308,18 @@ function updatePrinterPermissionStatusUI() {
 // 🔌 WEB THERMAL DRIVER ENGINE (USB & BLUETOOTH ESC/POS)
 // ==========================================================================
 
-/**
- * ১. ইউএসবি থার্মাল প্রিন্টার কানেকশন ইঞ্জিন (WebUSB API)
- */
 async function connectUSBPrinter() {
     try {
         if (!navigator.usb) {
             alert("আপনার ব্রাউজারে USB প্রিন্টিং সাপোর্ট করে না! অনুগ্রহ করে Google Chrome ব্যবহার করুন।");
             return;
         }
-
         connectedUSBDevice = await navigator.usb.requestDevice({ filters: [] });
         await connectedUSBDevice.open();
-        
         if (connectedUSBDevice.configuration === null) {
             await connectedUSBDevice.selectConfiguration(1);
         }
         await connectedUSBDevice.claimInterface(0);
-
         activePrinterType = 'usb';
         alert("🔌 থার্মাল প্রিন্টার USB ক্যাবলের মাধ্যমে সফলভাবে কানেক্ট হয়েছে!");
     } catch (err) {
@@ -271,34 +328,24 @@ async function connectUSBPrinter() {
     }
 }
 
-/**
- * ২. ব্লুটুথ থার্মাল প্রিন্টার কানেকশন ইঞ্জিন (Web Bluetooth API)
- */
 async function connectBluetoothPrinter() {
     try {
         if (!navigator.bluetooth) {
             alert("আপনার ডিভাইসে ব্লুটুথ সাপোর্ট করছে না বা ব্রাউজারে পারমিশন দেওয়া নেই!");
             return;
         }
-
         const device = await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
-            optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '00001101-0000-1000-8000-00805f9b34fb'] // স্ট্যান্ডার্ড প্রিন্টার GATT UUIDs
+            optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '00001101-0000-1000-8000-00805f9b34fb']
         });
-
         const server = await device.gatt.connect();
-        
-        // প্রিন্ট সার্ভার সার্ভিস এবং ক্যারেক্টারিস্টিক খুঁজে নেওয়া
         const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
         const characteristics = await service.getCharacteristics();
-        
-        // প্রথম রাইটিং ক্যারেক্টারিস্টিক বাছাই করা
         connectedBTCharacteristic = characteristics.find(c => c.properties.write || c.properties.writeWithoutResponse);
 
         if (!connectedBTCharacteristic) {
             throw new Error("কোনো সচল রাইটিং ক্যারেক্টারিস্টিক খুঁজে পাওয়া যায়নি।");
         }
-
         activePrinterType = 'bluetooth';
         alert("🔵 থার্মাল প্রিন্টার ব্লুটুথের মাধ্যমে পেয়ার ও কানেক্ট হয়েছে!");
     } catch (err) {
@@ -307,79 +354,58 @@ async function connectBluetoothPrinter() {
     }
 }
 
-/**
- * ৩. স্মার্ট প্রিন্টার গেটওয়ে রানটাইম (USB/BT বাইনারি এবং উইন্ডো ফলব্যাক)
- */
 function executeSmartPrint(betData) {
-    // স্লিপ জেনারেট করার ডাটা স্ট্রাকচার
     const now = new Date();
     const formattedDate = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}`;
-    
-    // ESC/POS কমান্ড জেনারেট করা (বাইট কোড)
     const encoder = new TextEncoder();
     let commands = [];
 
-    // প্রিন্টার ইনিশিয়ালাইজেশন
     commands.push(0x1B, 0x40); 
-    // সেন্টার অ্যালাইনমেন্ট
     commands.push(0x1B, 0x61, 0x01); 
-    
-    // টাইটেল (বোল্ড ও লার্জ ফন্ট)
-    commands.push(0x1B, 0x45, 0x01); // Bold ON
+    commands.push(0x1B, 0x45, 0x01); 
     commands.push(...encoder.encode("ATOZ BOMBAY\n"));
-    commands.push(0x1B, 0x45, 0x00); // Bold OFF
+    commands.push(0x1B, 0x45, 0x00); 
     commands.push(...encoder.encode("PREMIUM CYBER PLAY\n"));
     commands.push(...encoder.encode("--------------------------------\n"));
     
-    // লেফট অ্যালাইনমেন্ট
     commands.push(0x1B, 0x61, 0x00); 
     commands.push(...encoder.encode(`ID: ${betData.betId}\n`));
     commands.push(...encoder.encode(`Player: ${betData.player}\n`));
     commands.push(...encoder.encode(`Time: ${formattedDate}\n`));
     commands.push(...encoder.encode("--------------------------------\n"));
     
-    // আইটেম টেবিল হেডার
     commands.push(...encoder.encode("ITEM            | POINTS\n"));
     commands.push(...encoder.encode("--------------------------------\n"));
     
-    // বাজির ঘর ও পয়েন্ট ডাটা ম্যাপিং
     Object.keys(betData.items).forEach(key => {
         const item = betData.items[key];
-        let rowStr = `${item.patti} (${item.single})`;
-        // লেআউট সোজা রাখার জন্য প্যাডিং স্পেস অ্যাডজাস্টমেন্ট
+        let rowStr = `${item.label}`;
         while (rowStr.length < 16) rowStr += ' ';
         rowStr += `| ${item.amount} Pts\n`;
         commands.push(...encoder.encode(rowStr));
     });
     
     commands.push(...encoder.encode("--------------------------------\n"));
-    
-    // রাইট অ্যালাইনমেন্ট (টোটাল পয়েন্ট)
     commands.push(0x1B, 0x61, 0x02);
-    commands.push(0x1B, 0x45, 0x01); // Bold ON
+    commands.push(0x1B, 0x45, 0x01); 
     commands.push(...encoder.encode(`TOTAL: ${betData.totalAmount} Pts\n`));
-    commands.push(0x1B, 0x45, 0x00); // Bold OFF
+    commands.push(0x1B, 0x45, 0x00); 
     
-    // সেন্টার অ্যালাইনমেন্ট ও ফুটার
     commands.push(0x1B, 0x61, 0x01);
-    commands.push(...encoder.encode("\nThank you! Good Luck!\n\n\n\n")); // পেপার স্পেসিং
-    commands.push(0x1D, 0x56, 0x41, 0x03); // অটো পেপার কাট কমান্ড (ESC/POS)
+    commands.push(...encoder.encode("\nThank you! Good Luck!\n\n\n\n")); 
+    commands.push(0x1D, 0x56, 0x41, 0x03); 
 
     const dataBuffer = new Uint8Array(commands);
 
-    // ১. ইউএসবি ক্যাবল প্রিন্ট লজিক
     if (activePrinterType === 'usb' && connectedUSBDevice) {
         connectedUSBDevice.transferOut(3, dataBuffer).catch(err => {
             console.error("USB Write error: ", err);
-            printThermalWindowFallback(betData); // কোনো কারণে ক্র্যাশ করলে উইন্ডো ব্যাকআপে চলে যাবে
+            printThermalWindowFallback(betData);
         });
     } 
-    // ২. ব্লুটুথ প্রিন্ট লজিক
     else if (activePrinterType === 'bluetooth' && connectedBTCharacteristic) {
-        // ব্লুটুথ প্যাকেট সাইজ লিমিটেশন (২০ বাইট চাঙ্ক আকারে সেন্ড করা হচ্ছে)
         const chunkSize = 20;
         let offset = 0;
-        
         function sendBTChunks() {
             if (offset >= dataBuffer.length) return;
             const chunk = dataBuffer.slice(offset, offset + chunkSize);
@@ -395,15 +421,11 @@ function executeSmartPrint(betData) {
         }
         sendBTChunks();
     } 
-    // ৩. ফলব্যাক উইন্ডো প্রিন্ট মেকানিজম (যদি সরাসরি কানেক্টেড ড্রাইভার সচল না থাকে)
     else {
         printThermalWindowFallback(betData);
     }
 }
 
-/**
- * ফলব্যাক সিস্টেম: ব্রাউজার পপআপ উইন্ডো প্রিন্টিং সিস্টেম (মোবাইল ও পিসির জন্য নিরাপদ ব্যাকআপ)
- */
 function printThermalWindowFallback(betData) {
     const printWindow = window.open("", "_blank", "width=300,height=600");
     if (!printWindow) return;
@@ -413,7 +435,7 @@ function printThermalWindowFallback(betData) {
         const item = betData.items[key];
         itemsHtml += `
             <tr style="border-bottom: 1px dashed #000;">
-                <td style="padding: 5px 0; font-size: 12px;">${item.patti} (${item.single})</td>
+                <td style="padding: 5px 0; font-size: 12px;">${item.label}</td>
                 <td style="padding: 5px 0; text-align: right; font-size: 12px;">${item.amount} Pts</td>
             </tr>
         `;
@@ -462,7 +484,6 @@ function printThermalWindowFallback(betData) {
     printWindow.document.write(content);
     printWindow.document.close();
     printWindow.focus();
-    
     setTimeout(() => {
         printWindow.print();
         printWindow.close();
@@ -470,214 +491,185 @@ function printThermalWindowFallback(betData) {
 }
 
 // ==========================================================================
-// 🎮 GAME BOARD INTERACTION & BET TRANSACTION SUBMISSION
+// 🎮 GAME BOARD INTERACTION & MULTI-CLICK ACCUMULATOR ENGINE
 // ==========================================================================
 
 /**
- * গেম বোর্ডের পাত্তি বা সিঙ্গেল ঘর সিলেক্ট করার রিয়েল-টাইম মেকানিজম
+ * গেম বোর্ডের পাত্তি বা সিঙ্গেল ঘর সিলেক্ট করার রিয়েল-টাইম মেকানিজম (Accumulator + Glow)
  */
 function setupTableInteraction() {
-    // টেবিলে কোনো সেলের ক্লাস নেম চেক করে ইভেন্ট বাইন্ডিং
-    const cells = document.querySelectorAll(".game-table-wrapper td.patti-cell");
+    // টেবিলে থাকা সব সেলের উপর ইভেন্ট লিসেনার বাইন্ড করা
+    const cells = document.querySelectorAll(".admin-cell, td.patti-cell");
     
     cells.forEach(cell => {
         cell.addEventListener("click", () => {
-            const cellId = cell.getAttribute("id");
-            const pattiValue = cell.getAttribute("data-patti");
-            const singleValue = cell.getAttribute("data-single");
-            const columnVal = cell.getAttribute("data-column");
+            if (drawTimeLeft <= 0) return; // টাইম শেষ হলে ক্লিক নিষ্ক্রিয়
 
-            if (cell.classList.contains("selected")) {
-                cell.classList.remove("selected");
-                delete activeBets[cellId];
-                removeBetOverlay(cell);
-            } else {
-                cell.classList.add("selected");
-                activeBets[cellId] = {
-                    id: cellId,
-                    patti: pattiValue,
-                    single: singleValue,
-                    column: columnVal,
-                    amount: 0 
-                };
-                createBetOverlay(cell);
-            }
-            updateActiveBetsPanel();
-        });
-    });
-}
+            const cellId = cell.getAttribute("id") || "cell_" + Math.random().toString(36).substr(2, 9);
+            if (!cell.getAttribute("id")) cell.setAttribute("id", cellId);
 
-/**
- * সেলের ভেতর সুন্দর নিয়ন গোল্ড প্লে পয়েন্ট ব্যাজ রেন্ডার করা
- */
-function createBetOverlay(cell) {
-    removeBetOverlay(cell);
+            const pattiValue = cell.getAttribute("data-patti") || cell.querySelector(".both-pat")?.innerText || "000";
+            const wordValue = cell.getAttribute("data-word") || cell.querySelector(".both-wrd")?.innerText || "XYZ";
+            const colNum = cell.getAttribute("data-column") || cell.querySelector(".cell-title")?.innerText || "0";
 
-    const overlayDiv = document.createElement("div");
-    overlayDiv.className = "active-bet-overlay";
-    
-    const targetValSpan = document.createElement("span");
-    targetValSpan.className = "bet-target-val";
-    targetValSpan.innerText = cell.getAttribute("data-patti") || cell.getAttribute("data-single");
-    
-    const ptsBadge = document.createElement("span");
-    ptsBadge.className = "bet-pts-badge";
-    ptsBadge.innerText = "0 Pts";
+            // সিএসএস অ্যাক্টিভ গ্লো ক্লাস যুক্ত করা
+            cell.classList.add("active-glow");
 
-    overlayDiv.appendChild(targetValSpan);
-    overlayDiv.appendChild(ptsBadge);
-    cell.appendChild(overlayDiv);
-}
-
-/**
- * আনসিলেক্ট করার সাথে সাথে গোল্ড ব্যাজ কন্টেইনার মুছে ফেলা
- */
-function removeBetOverlay(cell) {
-    const overlay = cell.querySelector(".active-bet-overlay");
-    if (overlay) {
-        overlay.remove();
-    }
-}
-
-/**
- * সাইডবার বা প্লেয়ার জোন বেটিং ডাটা লিস্ট ইনপুট বক্স জেনারেটর
- */
-function updateActiveBetsPanel() {
-    const activeBetsList = document.getElementById("activeBetsList");
-    if (!activeBetsList) return;
-
-    activeBetsList.innerHTML = "";
-
-    const keys = Object.keys(activeBets);
-    if (keys.length === 0) {
-        activeBetsList.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">No cells selected</p>`;
-        return;
-    }
-
-    keys.forEach(key => {
-        const bet = activeBets[key];
-        const row = document.createElement("div");
-        row.className = "form-group bet-input-row";
-        row.style.marginBottom = "10px";
-        row.style.display = "flex";
-        row.style.alignItems = "center";
-        row.style.justifyContent = "space-between";
-
-        row.innerHTML = `
-            <span style="font-weight: 600; color: var(--accent-blue);">${bet.patti} (${bet.single}):</span>
-            <input type="number" class="bet-amount-input" data-id="${key}" value="${bet.amount || ''}" placeholder="Points" style="width: 100px; padding: 6px; text-align: center;">
-        `;
-
-        activeBetsList.appendChild(row);
-    });
-
-    // ইনপুট ভ্যালু পরিবর্তনের সাথে সাথে রিয়েল-টাইম অবজেক্ট ডাটা সিঙ্ক
-    const inputs = activeBetsList.querySelectorAll(".bet-amount-input");
-    inputs.forEach(input => {
-        input.addEventListener("input", (e) => {
-            const cellId = e.target.getAttribute("data-id");
-            const val = parseInt(e.target.value) || 0;
-            
+            // মাল্টি-ক্লিক প্লাস লজিক (Accumulator): প্রতি ক্লিকে ১০ টাকা করে বাড়বে
+            let clickAmount = 10;
             if (activeBets[cellId]) {
-                activeBets[cellId].amount = val;
-                
-                const cell = document.getElementById(cellId);
-                if (cell) {
-                    const badge = cell.querySelector(".bet-pts-badge");
-                    if (badge) {
-                        badge.innerText = val + " Pts";
-                    }
-                }
+                activeBets[cellId] += clickAmount;
+            } else {
+                activeBets[cellId] = clickAmount;
             }
+
+            // সেলের ব্যাকআপ মেটাডাটা সেভ করা
+            cellDetails[cellId] = {
+                patti: pattiValue,
+                word: wordValue,
+                column: colNum
+            };
+
+            // সেলের ভেতরেই ভিজ্যুয়াল লাইভ পয়েন্ট ব্যাজ আপডেট করা
+            addBetVisualIndicator(cell, activeBets[cellId]);
+
+            // ডানদিকের প্যানেলে ডায়নামিক গ্রাফিক্যাল র (Row) এবং গ্র্যান্ড টোটাল রি-রেন্ডার করা
+            updateSelectedItemsUI();
         });
     });
 }
 
 /**
- * ফায়ারবেস রিয়েলটাইম ডাটাবেজে বাজি সাবমিট করার কোর ট্রানজেকশন ফাংশন
+ * সেলের ভেতর লাইভ স্কোর বা ব্যাজ ডিসপ্লে করানো
  */
-function submitBets() {
-    const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
-    if (!currentUser) return;
-
-    const keys = Object.keys(activeBets);
-    if (keys.length === 0) {
-        alert(currentLanguage === 'en' ? "Please select at least one cell!" : "অনুগ্রহ করে কমপক্ষে একটি ঘর নির্বাচন করুন!");
-        return;
+function addBetVisualIndicator(cell, amount) {
+    let existing = cell.querySelector(".live-load") || cell.querySelector(".bet-badge");
+    if (existing) {
+        existing.innerText = amount + " Pts";
+    } else {
+        const badge = document.createElement("span");
+        badge.className = "live-load";
+        badge.innerText = amount + " Pts";
+        cell.appendChild(badge);
     }
-
-    let totalBetPoints = 0;
-    let hasInvalidAmount = false;
-
-    keys.forEach(key => {
-        const amt = activeBets[key].amount;
-        if (amt <= 0) {
-            hasInvalidAmount = true;
-        }
-        totalBetPoints += amt;
-    });
-
-    if (hasInvalidAmount) {
-        alert(currentLanguage === 'en' ? "Please enter a valid points amount for all selected cells!" : "নির্বাচিত সমস্ত ঘরে পয়েন্টের সঠিক পরিমাণ লিখুন!");
-        return;
-    }
-
-    const userRef = window.db.ref("users/" + currentUser.username);
-    userRef.once("value").then((snapshot) => {
-        if (!snapshot.exists()) return;
-
-        const userData = snapshot.val();
-        const currentPlayPoints = userData.playPoints || 0;
-
-        if (currentPlayPoints < totalBetPoints) {
-            alert(currentLanguage === 'en' ? "Insufficient Play Points!" : "আপনার প্লে পয়েন্ট পর্যাপ্ত নয়!");
-            return;
-        }
-
-        const newPlayPoints = currentPlayPoints - totalBetPoints;
-        const betId = "BET_" + Date.now();
-        const betData = {
-            betId: betId,
-            player: currentUser.username,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            totalAmount: totalBetPoints,
-            items: activeBets,
-            status: "pending"
-        };
-
-        const updates = {};
-        updates["/users/" + currentUser.username + "/playPoints"] = newPlayPoints;
-        updates["/bets/" + betId] = betData;
-
-        window.db.ref().update(updates)
-            .then(() => {
-                alert(currentLanguage === 'en' ? "Bet placed successfully!" : "বাজি সফলভাবে সাবমিট হয়েছে!");
-                
-                // প্রিন্টার পারমিশন এবং অটো-প্রিন্ট চেক অন থাকলে প্রিন্টিং মেকানিজম ট্রিগার হবে
-                const printReceiptCheckbox = document.getElementById("printReceiptCheckbox");
-                if (isPrinterAllowed && printReceiptCheckbox && printReceiptCheckbox.checked) {
-                    executeSmartPrint(betData);
-                }
-
-                // বাজি জমা হওয়ার পর গেম স্টেট রিসেট করা
-                clearAllBets();
-            })
-            .catch((error) => {
-                console.error("Bet placement failed: ", error);
-                alert(currentLanguage === 'en' ? "Failed to place bet. Try again." : "বাজি সাবমিট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
-            });
-    });
 }
 
 /**
- * সিলেক্টেড সমস্ত বাজি ও বোর্ডের ব্যাজগুলো এক ক্লিকে পরিষ্কার করা
+ * SELECTED ITEMS বক্সে সুন্দর মডার্ন ইংরেজি ও বাংলা র (Row) তৈরি ও টোটাল ডিসপ্লে
  */
-function clearAllBets() {
-    activeBets = {};
-    const cells = document.querySelectorAll(".game-table-wrapper td.patti-cell");
-    cells.forEach(cell => {
-        cell.classList.remove("selected");
-        removeBetOverlay(cell);
+function updateSelectedItemsUI() {
+    const container = document.getElementById("selectedItemsContainer");
+    if (!container) return;
+    
+    container.innerHTML = ""; // কন্টেইনার খালি করা
+    let grandTotal = 0;
+
+    Object.keys(activeBets).forEach(id => {
+        const amt = activeBets[id];
+        grandTotal += amt;
+
+        const details = cellDetails[id];
+        let displayPrefix = "";
+
+        // ভিউ মোড ও বেট টাইপ মেপে ইংরেজি সংক্ষেপ তৈরি (P = Patti, W = Word, S = Single)
+        if (currentBetType === 'Single') {
+            displayPrefix = `S: ${details.column}`;
+        } else {
+            if (currentViewMode === 'Both') {
+                displayPrefix = `P: ${details.patti} | W: ${details.word}`;
+            } else if (currentViewMode === 'Word') {
+                displayPrefix = `W: ${details.word}`;
+            } else if (currentViewMode === 'Digit') {
+                displayPrefix = `P: ${details.patti}`;
+            }
+        }
+
+        // কাস্টম সিএসএস থিমে ডায়নামিক র (Row) বক্স ইনপুট করা
+        const row = document.createElement("div");
+        row.className = "selected-item-row";
+        row.innerHTML = `
+            <span>[ ${displayPrefix} ]</span>
+            <strong>৳${amt}</strong>
+        `;
+        container.appendChild(row);
     });
-    updateActiveBetsPanel();
+
+    // নিচে লাইভ গ্র্যান্ড টোটাল বসানো
+    const totalDisplay = document.getElementById("grandTotalDisplay");
+    if (totalDisplay) {
+        totalDisplay.innerText = `Total Points: ৳${grandTotal}`;
+    }
+}
+
+/**
+ * সাবমিট বাটন অ্যাকশন, রসিদ প্রিন্ট গেটওয়ে ও অটো-ক্লিনআপ মেকানিজম
+ */
+function submitAllBets() {
+    const container = document.getElementById("selectedItemsContainer");
+    const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+    
+    if (Object.keys(activeBets).length === 0) {
+        alert(currentLanguage === 'en' ? "Please select a bet first!" : "অনুগ্রহ করে আগে বাজি সিলেক্ট করুন!");
+        return;
+    }
+
+    let grandTotal = 0;
+    let itemsForReceipt = {};
+    
+    Object.keys(activeBets).forEach(id => {
+        grandTotal += activeBets[id];
+        const det = cellDetails[id];
+        itemsForReceipt[id] = {
+            label: currentBetType === 'Single' ? `Single ${det.column}` : `${det.patti}-${det.word}`,
+            amount: activeBets[id]
+        };
+    });
+
+    const betSubmissionData = {
+        betId: "BOM-" + Math.floor(100000 + Math.random() * 900000),
+        player: currentUser ? currentUser.username : "Unknown",
+        items: itemsForReceipt,
+        totalAmount: grandTotal
+    };
+
+    // ফায়ারবেস ডেটাবেসে বাজি পুশ করা (লাইভ ফায়ারবেস ইন্টিগ্রেশন)
+    if (window.db && currentUser) {
+        window.db.ref("bets/" + betSubmissionData.betId).set({
+            player: betSubmissionData.player,
+            totalAmount: betSubmissionData.totalAmount,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            status: "pending"
+        });
+    }
+
+    // ১. স্ক্রিনে "✔ Bet Submitted Successfully!" পপ-আপ মেসেজ দেখানো
+    if (container) {
+        container.innerHTML = `<div class="bet-success-msg">✔ Bet Submitted Successfully!</div>`;
+    }
+
+    // ২. অটো-প্রিন্ট চেকড থাকলে থার্মাল ড্রাইভার সচল করা
+    const autoPrintCheckbox = document.getElementById("printReceiptCheckbox");
+    if (autoPrintCheckbox && autoPrintCheckbox.checked) {
+        executeSmartPrint(betSubmissionData);
+    }
+
+    // ৩. ৩ সেকেন্ড পর পুরো বোর্ড, সিলেক্টেড আইটেম ও গ্লো মার্ক অটোমেটিক ভ্যানিশ (Reset) করা
+    setTimeout(() => {
+        // মেমোরি খালি করা
+        activeBets = {};
+        cellDetails = {};
+
+        // সিএসএস গ্লো এবং ব্যাজ রিমুভ করা
+        document.querySelectorAll(".admin-cell, td.patti-cell").forEach(cell => {
+            cell.classList.remove("active-glow");
+            let badge = cell.querySelector(".live-load") || cell.querySelector(".bet-badge");
+            if (badge) badge.remove();
+        });
+
+        // কন্টেইনার ফ্লাশ
+        if (container) container.innerHTML = "";
+        
+        const totalDisplay = document.getElementById("grandTotalDisplay");
+        if (totalDisplay) totalDisplay.innerText = "Total Points: ৳0";
+    }, 3000);
 }
