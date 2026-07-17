@@ -1,77 +1,39 @@
-<!-- ==========================================================================
-     ATOZ BOMBAY - PREMIUM CYBER INTERFACE (v7.1.2.8 Lite)
-     ==========================================================================
-     [CORE FEATURES INSIDE THIS FILE]:
-     1. VERSION CONTROL DISPLAY: স্ক্রিনের টপ-রাইটে নতুন v7.1.2.8 Lite ট্যাগ শো করা।
-     2. NEON BORDER TRACING: সাইবারপাঙ্ক নিওন লাইটিং ও রেসপনসিভ কন্টেইনার লেআউট।
-     3. CASE-INSENSITIVE INPUTS: ইউজার ছোট হাতের বা বড় হাতের অক্ষরে আইডি লিখলেও 
-        তা সুন্দরভাবে ক্যাচ করে ব্যাকএন্ডে পাঠানোর ব্যবস্থা।
-     4. SECURITY FILE INTEGRATION: একটু আগে তৈরি করা 'firebase_security_auth.js' 
-        ফাইলটিকে এই ইন্টারফেসের সাথে লিংক করা।
-     ========================================================================== -->
-
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <h2 class="neon-title">ATOZ BOMBAY ADMIN LOG-IN</h2>
-    <!-- নিওন স্টাইলশিট লিংক -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <!-- লাইভ ভার্সন কন্ট্রোল ট্যাগ -->
-    <div class="update-version-tag">Version 7.1.2.8 Lite</div>
-
-    <div class="login-container">
-       <h2 class="neon-title">ATOZ BOMBAY PLAYER LOG-IN</h2>
+{
+  "rules": {
+    "users": {
+      "$username": {
+        // ১. প্লেয়ার নিজের ডাটা দেখতে পারবে (ইমেইল থেকে আইডি বের করে), অথবা মাস্টার অ্যাডমিন দেখতে পারবে
+        ".read": "auth != null && (auth.token.email.replace('@atozpatti.com', '') === $username || root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('role').val() === 'master_admin')",
         
-        <form id="loginForm" onsubmit="handleFormSubmit(event)">
-            <div class="input-group">
-                <label for="userId">ইউজার আইডি / অ্যাডমিন আইডি:</label>
-                <!-- কেস-ইনসেন্সিটিভ করার জন্য input-এ automatic ছোট হাতের অক্ষরে কনভার্ট করার মেকানিজম -->
-                <input type="text" id="userId" placeholder="যেমন: player01 বা subadmin" required oninput="this.value = this.value.toLowerCase()">
-            </div>
-            
-            <div class="input-group">
-                <label for="userPassword">সিকিউর পাসওয়ার্ড:</label>
-                <input type="password" id="userPassword" placeholder="••••••••" required>
-            </div>
-            
-            <button type="submit" class="neon-btn">কানেক্ট টু সার্ভার</button>
-        </form>
-    </div>
-
-    <!-- ফায়ারবেস কোর এসডিকে (SDK) এবং কনফিগারেশন লজিক -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
-    <!-- আমাদের তৈরি করা সিকিউরিটি ও অথ ইঞ্জিন লিংক করলাম -->
-    <script src="firebase_security_auth.js"></script>
-
-    <!-- ফ্রন্টএন্ড লগইন ট্রিগার লজিক -->
-    <script>
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-            
-            const idInput = document.getElementById('userId').value.trim();
-            const passwordInput = document.getElementById('userPassword').value;
-            
-            console.log("[INTERFACE] Login attempt initiated for ID:", idInput);
-            
-            // আমাদের সিকিউরিটি ফাইলের কোর ফাংশনকে কল করা হলো
-            const result = await window.SecureAuth.login(idInput, passwordInput);
-            
-            if (result.success) {
-                console.log("[INTERFACE] Login Successful! Redirecting to dashboard...");
-                // সফল হলে ড্যাশবোর্ডে বা মেইন গেমে নিয়ে যাবে
-                alert("লগইন সফল হয়েছে! সিস্টেমে স্বাগতম।");
-            } else {
-                console.error("[INTERFACE] Login failed due to:", result.reason);
-            }
+        // ২. শুধুমাত্র মাস্টার অ্যাডমিন নতুন ইউজার তৈরি বা ব্লক/আনব্লক করতে পারবে
+        ".write": "auth != null && root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('role').val() === 'master_admin'",
+        
+        // ৩. প্লেয়ারের ব্যালেন্স বা স্ট্যাটাস ভ্যালিডেশন (আপনার নিখুঁত লজিক)
+        "balance": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "winning_balance": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "status": {
+          ".validate": "newData.val() == 'Active' || newData.val() == 'Block'"
         }
-    </script>
-</body>
-</html>
+      }
+    },
+    "game_sessions": {
+      // গেম সেশনের লাইভ ফিড ও রেশিও প্লেয়ার এবং অ্যাডমিন দুজনেই দেখতে পাবে
+      ".read": "auth != null",
+      
+      // এখানে অ্যাডমিন বা অ্যাক্টিভ প্লেয়ার—দুজনেই রাইট করতে পারবে, তবে ভেতরে কন্ডিশন আলাদা হবে
+      ".write": "auth != null",
+      
+      "live_feed": {
+        "$betId": {
+          // প্লেয়ার শুধুমাত্র তখনই বাজি সাবমিট করতে পারবে যদি তার ডাটাবেস স্ট্যাটাস 'Active' থাকে
+          // আর মাস্টার অ্যাডমিন যেকোনো গ্লোবাল শিডিউল চেঞ্জ করতে পারবে
+          ".write": "auth != null && (root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('status').val() === 'Active' || root.child('users').child(auth.token.email.replace('@atozpatti.com', '')).child('role').val() === 'master_admin')"
+        }
+      }
+    }
+  }
+}
