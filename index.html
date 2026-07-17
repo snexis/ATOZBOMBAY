@@ -1,561 +1,77 @@
-<!-- FILE NAME: index.html | VERSION: v6.1 [Ultra-Premium i18n] | DATE: 2026-07-16 -->
-<!-- PURPOSE: Ultimate Player Portal with RGB Border Trace, Smart Day/Night Sync, Realtime Notice, Case-Insensitive Login & i18n Support -->
+<!-- ==========================================================================
+     ATOZ BOMBAY - PREMIUM CYBER INTERFACE (v7.1.2.8 Lite)
+     ==========================================================================
+     [CORE FEATURES INSIDE THIS FILE]:
+     1. VERSION CONTROL DISPLAY: স্ক্রিনের টপ-রাইটে নতুন v7.1.2.8 Lite ট্যাগ শো করা।
+     2. NEON BORDER TRACING: সাইবারপাঙ্ক নিওন লাইটিং ও রেসপনসিভ কন্টেইনার লেআউট।
+     3. CASE-INSENSITIVE INPUTS: ইউজার ছোট হাতের বা বড় হাতের অক্ষরে আইডি লিখলেও 
+        তা সুন্দরভাবে ক্যাচ করে ব্যাকএন্ডে পাঠানোর ব্যবস্থা।
+     4. SECURITY FILE INTEGRATION: একটু আগে তৈরি করা 'firebase_security_auth.js' 
+        ফাইলটিকে এই ইন্টারফেসের সাথে লিংক করা।
+     ========================================================================== -->
 
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
-    <title>AtoZ Bombay - Premium Player Portal</title>
-    
-    <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
-    <script src="firebase-config.js"></script>
-
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(-45deg, #070b19, #0f172a, #1e1b4b, #210738);
-            --card-bg: rgba(15, 23, 42, 0.6);
-            --text-main: #ffffff;
-            --text-muted: #94a3b8;
-            --primary-glow: #00ffc8;
-            --btn-gradient: linear-gradient(135deg, #00ffc8, #00bfa5);
-            --input-bg: rgba(10, 15, 30, 0.8);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --accent-glow: rgba(0, 255, 200, 0.3);
-        }
-
-        /* দিনের আলোর জন্য লাইট থিম */
-        [data-theme="light"] {
-            --bg-gradient: linear-gradient(-45deg, #f1f5f9, #e2e8f0, #cbd5e1, #f1f5f9);
-            --card-bg: rgba(255, 255, 255, 0.8);
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --primary-glow: #0d9488;
-            --btn-gradient: linear-gradient(135deg, #0d9488, #0f766e);
-            --input-bg: rgba(255, 255, 255, 0.95);
-            --border-color: rgba(15, 23, 42, 0.15);
-            --accent-glow: rgba(13, 148, 136, 0.2);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-gradient);
-            background-size: 400% 400%;
-            animation: gradientBg 15s ease infinite;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background 0.5s ease;
-        }
-
-        @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* ১. রিয়েলটাইম গ্লোবাল নোটিস বার */
-        .notice-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(10, 15, 30, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            color: var(--primary-glow);
-            padding: 10px 0;
-            font-size: 13px;
-            font-weight: 600;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .notice-title {
-            background: var(--btn-gradient);
-            color: #0f172a;
-            padding: 5px 14px;
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            border-radius: 6px;
-            margin-left: 15px;
-            margin-right: 10px;
-            white-space: nowrap;
-            box-shadow: 0 0 10px var(--accent-glow);
-            letter-spacing: 1px;
-        }
-
-        .notice-content {
-            flex-grow: 1;
-            overflow: hidden;
-            white-space: nowrap;
-            margin-right: 15px;
-        }
-
-        .notice-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: marquee 25s linear infinite;
-            color: var(--text-main);
-            font-size: 13px;
-        }
-
-        @keyframes marquee {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
-        }
-
-        /* ২. নিওন বর্ডার ট্রেসিং অ্যানিমেটেড লগইন কার্ড */
-        .card-wrapper {
-            position: relative;
-            width: 350px;
-            border-radius: 24px;
-            padding: 3px;
-            overflow: hidden;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
-            margin-top: 60px;
-        }
-
-        /* কার্ডের চারপাশের রানিং নিওন লাইট অ্যানিমেশন */
-        .card-wrapper::before {
-            content: '';
-            position: absolute;
-            width: 160%;
-            height: 160%;
-            background: conic-gradient(from 0deg, transparent 30%, var(--primary-glow), transparent 50%, var(--primary-glow), transparent 70%);
-            top: -30%;
-            left: -30%;
-            animation: rotateBorder 3s linear infinite;
-            z-index: 1;
-        }
-
-        @keyframes rotateBorder {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .login-card {
-            position: relative;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 45px 35px;
-            border-radius: 21px;
-            text-align: center;
-            z-index: 2;
-            transition: all 0.5s ease;
-        }
-
-        h2 {
-            margin: 0 0 6px 0;
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--primary-glow);
-            text-shadow: 0 0 15px var(--accent-glow);
-            letter-spacing: 1.5px;
-        }
-
-        .subtitle {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 35px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 700;
-        }
-
-        /* গর্জাস ইনপুট গ্রুপ স্টাইল */
-        .input-group {
-            position: relative;
-            margin-bottom: 22px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 600;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 15px var(--accent-glow);
-            background: rgba(10, 15, 30, 0.95);
-        }
-
-        /* পাসওয়ার্ড দেখানোর বাটন */
-        .password-container {
-            position: relative;
-        }
-
-        .eye-btn {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            transition: color 0.3s;
-        }
-
-        .eye-btn:hover {
-            color: var(--primary-glow);
-        }
-
-        /* রিমেম্বার আইডি চেক বক্স */
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 600;
-            user-select: none;
-        }
-
-        .checkbox-container input {
-            display: none;
-        }
-
-        .custom-checkmark {
-            height: 18px;
-            width: 18px;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-right: 10px;
-            display: inline-block;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .checkbox-container input:checked + .custom-checkmark {
-            background: var(--primary-glow);
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        .custom-checkmark:after {
-            content: "";
-            position: absolute;
-            display: none;
-            left: 6px;
-            top: 2px;
-            width: 4px;
-            height: 9px;
-            border: solid #0f172a;
-            border-width: 0 2.5px 2.5px 0;
-            transform: rotate(45deg);
-        }
-
-        .checkbox-container input:checked + .custom-checkmark:after {
-            display: block;
-        }
-
-        /* গ্লোয়িং লগইন বাটন */
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--btn-gradient);
-            border: none;
-            border-radius: 10px;
-            color: #0f172a;
-            font-size: 16px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px var(--accent-glow);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px var(--primary-glow);
-        }
-
-        /* লোডার অ্যানিমেশন */
-        .loader {
-            width: 18px;
-            height: 18px;
-            border: 2.5px solid #0f172a;
-            border-bottom-color: transparent;
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-            display: none;
-        }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* এরর মেসেজ বক্স */
-        .error-message {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.35);
-            color: #f87171;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 18px;
-            font-size: 13px;
-            font-weight: 600;
-            display: none;
-            text-align: center;
-        }
-
-        /* থিম সুইচার */
-        .theme-toggle {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid var(--border-color);
-            color: var(--primary-glow);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1) rotate(15deg);
-        }
-
-        /* রেসপন্সিভনেস */
-        @media (max-width: 480px) {
-            .card-wrapper {
-                width: 90%;
-                margin-top: 70px;
-            }
-            .login-card {
-                padding: 35px 22px;
-            }
-            h2 {
-                font-size: 22px;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <h2 class="neon-title">ATOZ BOMBAY ADMIN LOG-IN</h2>
+    <!-- নিওন স্টাইলশিট লিংক -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- ১. ডাইনামিক নোটিস বার (i18n ফ্রেন্ডলি) -->
-    <div class="notice-bar">
-        <span class="notice-title">ঘোষণা / Notice</span>
-        <div class="notice-content">
-            <span class="notice-text" id="dbNoticeText">লোডিং হচ্ছে / Loading...</span>
-        </div>
-    </div>
+    <!-- লাইভ ভার্সন কন্ট্রোল ট্যাগ -->
+    <div class="update-version-tag">Version 7.1.2.8 Lite</div>
 
-    <!-- ২. নিওন বর্ডার ট্রেসিং লগইন কার্ড -->
-    <div class="card-wrapper">
-        <div class="login-card">
-            <h2>ATOZ BOMBAY</h2>
-            <div class="subtitle">Portal v6.1 [Premium]</div>
-
-            <form id="playerLoginForm">
-                <div class="input-group">
-                    <label for="playerId">প্লেয়ার আইডি (Player ID):</label>
-                    <input type="text" id="playerId" class="input-field" placeholder="আইডি লিখুন (Enter ID)..." required autocomplete="off">
-                </div>
-
-                <div class="input-group">
-                    <label for="playerPin">পিন কোড (PIN Code):</label>
-                    <div class="password-container">
-                        <input type="password" id="playerPin" class="input-field" placeholder="পিন লিখুন (Enter PIN)..." required>
-                        <button type="button" id="togglePassword" class="eye-btn">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <label class="checkbox-container">
-                    <input type="checkbox" id="rememberMe">
-                    <span class="custom-checkmark"></span>
-                    আইডি মনে রাখুন (Remember ID)
-                </label>
-
-                <button type="submit" id="loginBtn" class="submit-btn">
-                    <span class="loader" id="btnLoader"></span>
-                    <span id="btnText">লগইন করুন / Login</span>
-                </button>
-            </form>
-
-            <div id="loginError" class="error-message"></div>
-        </div>
-    </div>
-
-    <!-- ৩. থিম সুইচার -->
-    <button class="theme-toggle" id="themeBtn" title="থিম পরিবর্তন করুন / Switch Theme">
-        <i class="fa-solid fa-moon"></i>
-    </button>
-
-    <script>
-        const passwordInput = document.getElementById('playerPin');
-        const togglePasswordButton = document.getElementById('togglePassword');
-        const rememberMeCheckbox = document.getElementById('rememberMe');
-        const playerIdInput = document.getElementById('playerId');
-        const themeBtn = document.getElementById('themeBtn');
-
-        // ১. অটোমেটিক সিস্টেম ব্রাইটনেস এবং থিম সেটআপ
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                updateThemeIcon(savedTheme);
-            } else {
-                const hour = new Date().getHours();
-                const defaultTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', defaultTheme);
-                updateThemeIcon(defaultTheme);
-            }
-        }
-
-        function updateThemeIcon(theme) {
-            const icon = themeBtn.querySelector('i');
-            icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        }
-
-        themeBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        });
-
-        initTheme();
-
-        // ২. রিয়েলটাইম নোটিস রিড (ফায়ারবেস ডেটাবেস থেকে)
-        function loadRealtimeNotice() {
-            const noticeRef = firebase.database().ref('notice');
-            noticeRef.on('value', (snapshot) => {
-                const noticeData = snapshot.val();
-                document.getElementById('dbNoticeText').innerText = noticeData ? noticeData : "AtoZ Bombay প্লেয়ার পোর্টালে আপনাকে স্বাগতম! / Welcome to AtoZ Bombay!";
-            }, () => {
-                document.getElementById('dbNoticeText').innerText = "AtoZ Bombay প্লেয়ার পোর্টালে আপনাকে স্বাগতম! / Welcome to AtoZ Bombay!";
-            });
-        }
-
-        // ৩. পেজ লোডে আইডি রিমেম্বার লজিক
-        window.addEventListener('DOMContentLoaded', () => {
-            loadRealtimeNotice();
-            const savedId = localStorage.getItem('savedPlayerId');
-            if (savedId) {
-                playerIdInput.value = savedId;
-                rememberMeCheckbox.checked = true;
-            }
-        });
-
-        // ৪. পাসওয়ার্ড শো/হাইড
-        togglePasswordButton.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            const icon = togglePasswordButton.querySelector('i');
-            icon.className = type === 'text' ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-        });
-
-        // ৫. ফাইনাল লগইন লজিক (নিখুঁত কেস-সেন্সিটিভ ফিক্স সহ)
-        document.getElementById('playerLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+    <div class="login-container">
+       <h2 class="neon-title">ATOZ BOMBAY PLAYER LOG-IN</h2>
+        
+        <form id="loginForm" onsubmit="handleFormSubmit(event)">
+            <div class="input-group">
+                <label for="userId">ইউজার আইডি / অ্যাডমিন আইডি:</label>
+                <!-- কেস-ইনসেন্সিটিভ করার জন্য input-এ automatic ছোট হাতের অক্ষরে কনভার্ট করার মেকানিজম -->
+                <input type="text" id="userId" placeholder="যেমন: player01 বা subadmin" required oninput="this.value = this.value.toLowerCase()">
+            </div>
             
-            // আইডিটিকে ছোট হাতের অক্ষরে রূপান্তর (toLowerCase) করে খোঁজা হচ্ছে
-            const id = playerIdInput.value.trim().toLowerCase();
-            const pin = passwordInput.value.trim();
-            const errorDiv = document.getElementById('loginError');
-            const loginBtn = document.getElementById('loginBtn');
-            const btnLoader = document.getElementById('btnLoader');
-            const btnText = document.getElementById('btnText');
+            <div class="input-group">
+                <label for="userPassword">সিকিউর পাসওয়ার্ড:</label>
+                <input type="password" id="userPassword" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="neon-btn">কানেক্ট টু সার্ভার</button>
+        </form>
+    </div>
 
-            // ওয়েটিং স্টেট চালু
-            errorDiv.style.display = 'none';
-            loginBtn.style.pointerEvents = 'none';
-            btnLoader.style.display = 'inline-block';
-            btnText.innerText = "Waiting for login...";
+    <!-- ফায়ারবেস কোর এসডিকে (SDK) এবং কনফিগারেশন লজিক -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <!-- আমাদের তৈরি করা সিকিউরিটি ও অথ ইঞ্জিন লিংক করলাম -->
+    <script src="firebase_security_auth.js"></script>
 
-            // আইডি সেভ লজিক
-            if (rememberMeCheckbox.checked) {
-                localStorage.setItem('savedPlayerId', playerIdInput.value.trim()); // ইউজার যেভাবে লিখেছে সেভাবেই সেভ হবে
+    <!-- ফ্রন্টএন্ড লগইন ট্রিগার লজিক -->
+    <script>
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const idInput = document.getElementById('userId').value.trim();
+            const passwordInput = document.getElementById('userPassword').value;
+            
+            console.log("[INTERFACE] Login attempt initiated for ID:", idInput);
+            
+            // আমাদের সিকিউরিটি ফাইলের কোর ফাংশনকে কল করা হলো
+            const result = await window.SecureAuth.login(idInput, passwordInput);
+            
+            if (result.success) {
+                console.log("[INTERFACE] Login Successful! Redirecting to dashboard...");
+                // সফল হলে ড্যাশবোর্ডে বা মেইন গেমে নিয়ে যাবে
+                alert("লগইন সফল হয়েছে! সিস্টেমে স্বাগতম।");
             } else {
-                localStorage.removeItem('savedPlayerId');
+                console.error("[INTERFACE] Login failed due to:", result.reason);
             }
-
-            // অ্যানোনিমাস লগইন এবং সরাসরি `users/` পাথ ডিরেক্টরি চেক
-            firebase.auth().signInAnonymously().then(() => {
-                firebase.database().ref('users/' + id).once('value').then((snapshot) => {
-                    const playerData = snapshot.val();
-
-                    if (playerData && (playerData.password == pin || playerData.pin == pin)) {
-                        // সফল লগইন
-                        window.location.href = "dashboard.html";
-                    } else {
-                        showError("ভুল আইডি বা পিন! / Wrong ID or PIN!");
-                    }
-                }).catch(() => {
-                    showError("ডাটাবেস কানেকশন এরর! / Database Connection Error!");
-                });
-            }).catch(() => {
-                showError("কানেকশন এরর! / Connection Error!");
-            });
-
-            function showError(message) {
-                errorDiv.style.display = 'block';
-                errorDiv.innerText = message;
-                loginBtn.style.pointerEvents = 'auto';
-                btnLoader.style.display = 'none';
-                btnText.innerText = "লগইন করুন / Login";
-                firebase.auth().signOut();
-            }
-        });
+        }
     </script>
 </body>
 </html>
