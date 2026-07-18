@@ -1,14 +1,16 @@
 /* ==========================================================================
-   ATOZ BOMBAY - COMPLETE ENGINE (v7.3.0 - #2200 FULL STRUCTURE LOCK)
+   🔑 PROJECT: A-TO-Z BOMBAY PLAY ZONE (A-TO-Z-PATTI)
+   📁 FILE: game_engine.js
+   📌 VERSION: v7.4.0 [LOG #2200 SYSTEM ALIGNED]
    ========================================================================== */
 
 const EngineConfig = {
-    version: "7.3.0 Full",
+    version: "7.4.0 Aligned",
     rows: 22,
     cols: 10
 };
 
-// #2200 কোর স্টেট - লাইভ ড্র ডেটাবেস কানেকশন (শুরুতে ফ্লেক্সিবল ডেমো, পরে ডাইনামিক)
+// #2200 কোর স্টেট - লাইভ ড্র ডেটাবেস কানেকশন
 window.LiveGameState = {
     currentResult: {
         digit: "-",
@@ -18,7 +20,12 @@ window.LiveGameState = {
     }
 };
 
-// সম্পূর্ণ ২২ লাইনের পাত্তি ডেটাবেস (কোনো কাটছাঁট ছাড়া)
+// গ্লোবাল একটিভ বেটিং অবজেক্ট ট্র্যাকিং
+window.activeBets = {}; 
+let selectedCoinValue = 2; // ডিফল্ট কয়েন মাল্টিপ্লায়ার
+let gameMode = 'Both';    
+
+// সম্পূর্ণ ২২ লাইনের পাত্তি ডেটাবেস
 const PATTI_DATA = {
     '1': ['100', '678', '777', '560', '470', '380', '290', '119', '137', '236', '146', '669', '579', '399', '588', '489', '245', '155', '227', '344', '335', '128'],
     '2': ['200', '345', '444', '570', '480', '390', '660', '129', '237', '336', '246', '679', '255', '147', '228', '499', '688', '778', '138', '156', '110', '569'],
@@ -32,7 +39,7 @@ const PATTI_DATA = {
     '0': ['000', '127', '190', '280', '370', '460', '550', '235', '118', '578', '145', '479', '668', '299', '334', '488', '389', '226', '569', '677', '136', '244']
 };
 
-// সম্পূর্ণ ২২ লাইনের ওয়ার্ড ম্যাপিং (কোনো কাটছাঁট ছাড়া)
+// সম্পূর্ণ ২২ লাইনের ওয়ার্ড ম্যাপিং
 const WORD_MAPPING = {
     'A': ['AXZ', 'BKP', 'LMO', 'RST', 'TUV', 'WXY', 'NOP', 'ABC', 'EFG', 'HIJ', 'KLM', 'QRS', 'UVW', 'XYZ', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR', 'STU', 'VWX', 'ZAB'],
     'B': ['BCA', 'CAB', 'DAB', 'DAC', 'EAC', 'FAD', 'GAD', 'HAD', 'JAD', 'KAD', 'LAD', 'MAD', 'NAD', 'PAD', 'RAD', 'SAD', 'TAD', 'VAD', 'WAD', 'YAD', 'ZAD', 'BAG'],
@@ -49,37 +56,24 @@ const WORD_MAPPING = {
 const COLUMNS_DIGIT = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 const COLUMNS_WORD = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-let gameMode = 'Both';    
-
-// টপ হেডার রেজাল্ট রেন্ডারার ফাংশন
+// ৩টি ডাইনামিক লাইভ মোড বক্স আপডেট ফাংশন (#2200 REFACTORED UPGRADE)
 function updateRealTimeResultUI(liveData = null) {
     if(liveData) {
         window.LiveGameState.currentResult = liveData;
     }
     
-    // টপ হেডার প্যানেল সিলেকশন (প্লেয়ার কমিশন রিমুভ করে রেজাল্ট দেখানোর জন্য)
-    const resultBox = document.getElementById('liveResultContainer') || document.querySelector('.player-commission-wrapper');
-    if (!resultBox) return;
+    const bothEl = document.getElementById('lblLiveBoth');
+    const wordEl = document.getElementById('lblLiveWord');
+    const digitEl = document.getElementById('lblLiveDigit');
 
-    resultBox.className = "live-result-header-block";
-    let resDisplay = "";
-    
-    if (gameMode === 'Digit') {
-        resDisplay = window.LiveGameState.currentResult.digit;
-    } else if (gameMode === 'Word') {
-        resDisplay = window.LiveGameState.currentResult.word;
-    } else {
-        resDisplay = `${window.LiveGameState.currentResult.patti} - ${window.LiveGameState.currentResult.word}`;
+    if (bothEl && wordEl && digitEl) {
+        bothEl.innerHTML = `<span style="color:#00ffcc;">${window.LiveGameState.currentResult.patti} - ${window.LiveGameState.currentResult.word}</span>`;
+        wordEl.innerHTML = `<span style="color:#ffc107;">${window.LiveGameState.currentResult.word}</span>`;
+        digitEl.innerHTML = `<span style="color:#3b82f6;">${window.LiveGameState.currentResult.digit}</span>`;
     }
-
-    resultBox.innerHTML = `
-        <span style="color:#ffffff; margin-right:6px; font-size:14px;">Result:</span>
-        <span style="color:#00ffcc; font-weight:bold; font-size:16px;">${resDisplay}</span>
-        <span style="font-size:11px; color:#ffcc00; margin-left:8px;">(${window.LiveGameState.currentResult.time})</span>
-    `;
 }
 
-// ২২ কলামের সম্পূর্ণ ডাইনামিক টেবিল জেনারেটর
+// সম্পূর্ণ ২২ লাইনের মেটাবলিক টেবিল জেনারেটর
 function generateGameTable(mode = 'Both') {
     gameMode = mode;
     updateRealTimeResultUI();
@@ -90,7 +84,7 @@ function generateGameTable(mode = 'Both') {
     let html = `<table><thead><tr>`;
     
     COLUMNS_DIGIT.forEach((col, idx) => {
-        let title = gameMode === 'Digit' ? `Col ${col}` : (gameMode === 'Word' ? `Col ${COLUMNS_WORD[idx]}` : `${col} - ${COLUMNS_WORD[idx]}`);
+        let title = gameMode === 'Digit' ? `কলাম ${col}` : (gameMode === 'Word' ? `কলাম ${COLUMNS_WORD[idx]}` : `${col} - ${COLUMNS_WORD[idx]}`);
         html += `<th>${title}</th>`;
     });
     html += `</tr></thead><tbody><tr class="single-row-header">`;
@@ -108,61 +102,133 @@ function generateGameTable(mode = 'Both') {
             const pattiValue = PATTI_DATA[col][r] || '';
             const wordValue = WORD_MAPPING[COLUMNS_WORD[idx]][r] || '';
             
-            let valStr = gameMode === 'Digit' ? pattiValue : (gameMode === 'Word' ? wordValue : `<span class="both-pat">${pattiValue}</span><hr class="both-split"><span class="both-wrd">${wordValue}</span>`);
-            html += `<td class="patti-cell" data-column="${col}" data-patti="${pattiValue}" data-word="${wordValue}" data-type="Patti" onclick="selectPattiCell(this)">${valStr}</td>`;
+            let valStr = gameMode === 'Digit' ? pattiValue : (gameMode === 'Word' ? wordValue : `<span class="both-pat" style="color:#fff; display:block; padding:2px 0;">${pattiValue}</span><hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:2px 0;"><span class="both-wrd" style="color:#94a3b8; display:block; padding:2px 0;">${wordValue}</span>`);
+            html += `<td class="patti-cell" data-column="${col}" data-patti="${pattiValue}" data-word="${wordValue}" data-type="Patti" data-row-index="${r}" onclick="selectPattiCell(this)">${valStr}</td>`;
         });
         html += `</tr>`;
     }
     wrapper.innerHTML = html + `</tbody></table>`;
+    
+    // মোড পরিবর্তনের পর পূর্বের সিলেক্টেড সেলগুলোর ভিজ্যুয়াল স্টেট ফিরিয়ে আনা
+    restoreCellVisualStates();
 }
 
-// সেল সিলেকশন ট্র্যাকিং এবং ডিসপ্লে বক্স আপডেট
+// সেল সিলেকশন ট্র্যাকিং এবং রাইট সাইডবার ড্র ম্যাট্রিক্স লাইভ সামারি আপডেট
 function selectPattiCell(cellElement) {
-    document.querySelectorAll('.patti-cell').forEach(c => {
-        c.classList.remove('selected', 'overlimit-red');
-    });
-    cellElement.classList.add('selected');
-    
     const type = cellElement.getAttribute('data-type');
     const col = cellElement.getAttribute('data-column');
-    const displayBox = document.getElementById('selectedPattiDisplay') || document.querySelector('.selected-items-box');
-
-    if (!displayBox) return;
+    let keyIdentifier = "";
 
     if (type === 'Single') {
-        const val = cellElement.getAttribute('data-val');
-        displayBox.innerHTML = `<span style="color:#ffcc00; font-weight:bold;">সিঙ্গেল ঘর: [ ${val} ] (কলাম ${col})</span>`;
+        keyIdentifier = `Single-${cellElement.getAttribute('data-val')}`;
     } else {
         const pat = cellElement.getAttribute('data-patti');
         const wrd = cellElement.getAttribute('data-word');
-        displayBox.innerHTML = `<span style="color:#00ffcc; font-weight:bold;">প্রার্থী পাত্তি: [ ${pat} ] | ওয়ার্ড: [ ${wrd} ] (কলাম ${col})</span>`;
+        keyIdentifier = `Patti-${pat}-${wrd}`;
     }
+
+    // যদি অলরেডি সিলেক্টেড থাকে তবে কয়েন কাউন্ট এড হবে, নাহলে নতুন এন্ট্রি হবে
+    if (window.activeBets[keyIdentifier]) {
+        window.activeBets[keyIdentifier].coins += selectedCoinValue;
+    } else {
+        window.activeBets[keyIdentifier] = {
+            type: type,
+            column: col,
+            value: type === 'Single' ? cellElement.getAttribute('data-val') : cellElement.getAttribute('data-patti'),
+            word: type === 'Single' ? '' : cellElement.getAttribute('data-word'),
+            coins: selectedCoinValue
+        };
+    }
+
+    cellElement.classList.add('selected');
+    updateSelectedItemsDisplay();
+    renderTokenInsideCell(cellElement, window.activeBets[keyIdentifier].coins);
+}
+
+// সেল এরিয়ার ভেতরে কয়েনের ডাইনামিক এনিমেশন টোকেন রেন্ডারার
+function renderTokenInsideCell(cellElement, totalCoins) {
+    let token = cellElement.querySelector('.bet-anim-token');
+    if (!token) {
+        token = document.createElement('span');
+        token.className = 'bet-anim-token';
+        token.style.cssText = "position:absolute; bottom:2px; right:2px; background:#00ffcc; color:#000; font-size:9px; font-weight:bold; border-radius:3px; padding:1px 3px; line-height:1;";
+        cellElement.style.position = 'relative';
+        cellElement.appendChild(token);
+    }
+    token.innerText = totalCoins;
+}
+
+// রাইট সাইডবার ডিসপ্লে বক্স আপডেট লজিক
+function updateSelectedItemsDisplay() {
+    const container = document.getElementById('selectedItemsContainer');
+    if (!container) return;
+
+    let keys = Object.keys(window.activeBets);
+    if (keys.length === 0) {
+        container.innerHTML = "No Patti Active / Counter Zero";
+        return;
+    }
+
+    let html = `<div style="display:flex; flex-direction:column; gap:6px;">`;
+    keys.forEach(key => {
+        const item = window.activeBets[key];
+        if (item.type === 'Single') {
+            html += `<div style="border-bottom:1px solid #233; padding-bottom:4px;">🎯 সিঙ্গেল [<b>${item.value}</b>] → <span style="color:#00ffcc;">${item.coins} Coins</span></div>`;
+        } else {
+            html += `<div style="border-bottom:1px solid #233; padding-bottom:4px;">🃏 পাত্তি [<b>${item.value}</b>] ওয়ার্ড [<b>${item.word}</b>] → <span style="color:#00ffcc;">${item.coins} Coins</span></div>`;
+        }
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// টেবিল রি-রেন্ডার হওয়ার পরও কয়েন টোকেন ও বর্ডার স্টেট রিস্টোর করার মেকানিজম
+function restoreCellVisualStates() {
+    document.querySelectorAll('.patti-cell').forEach(cell => {
+        const type = cell.getAttribute('data-type');
+        let keyIdentifier = "";
+
+        if (type === 'Single') {
+            keyIdentifier = `Single-${cell.getAttribute('data-val')}`;
+        } else {
+            keyIdentifier = `Patti-${cell.getAttribute('data-patti')}-${cell.getAttribute('data-word')}`;
+        }
+
+        if (window.activeBets[keyIdentifier]) {
+            cell.classList.add('selected');
+            renderTokenInsideCell(cell, window.activeBets[keyIdentifier].coins);
+        }
+    });
+}
+
+// কয়েন মাল্টিপ্লায়ার বাটন ক্লিক হ্যান্ডলার বাইন্ডিং
+function setupCoinSelectors() {
+    document.querySelectorAll('.coin-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.coin-btn').forEach(b => b.classList.remove('selected-coin'));
+            this.classList.add('selected-coin');
+            selectedCoinValue = parseInt(this.getAttribute('data-coin-val')) || 2;
+        });
+    });
 }
 
 // গিটহাব পেজেস ৪MD লগআউট ক্র্যাশ ফিক্স রউটার
 function secureLogoutRouter() {
-    const logoutBtn = document.getElementById('btnLogout') || document.querySelector('.logout-item, [href*="logout"], #logout');
+    const logoutBtn = document.getElementById('btnLogout');
     if (logoutBtn) {
-        logoutBtn.removeAttribute('href'); 
-        logoutBtn.style.cursor = "pointer";
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log("Secure Logout Executing... #2200");
-            
-            let currentPath = window.location.pathname;
-            let repoName = currentPath.split('/')[1]; 
-            
-            // যদি গিটহাব পেজেসে হোস্ট করা থাকে তবে রিপো নাম ধরে রিডাইরেক্ট করবে
+            let repoName = window.location.pathname.split('/')[1]; 
             if (window.location.hostname.includes('github.io')) {
                 window.location.href = window.location.origin + '/' + repoName + '/login.html';
             } else {
-                window.location.href = '/login.html';
+                window.location.href = './login.html';
             }
         });
     }
 }
 
-// লাইভ ডেমো ডেটা ট্রিগার (৩ সেকেন্ড পর রিয়াল টাইম আপডেট হবে)
+// লাইভ ডেমো ডেটা ট্রিগার (৩ সেকেন্ড পর রিয়াল টাইম আপডেট হবে)
 function simulateFirebaseLiveResult() {
     setTimeout(() => {
         updateRealTimeResultUI({
@@ -174,17 +240,15 @@ function simulateFirebaseLiveResult() {
     }, 3000);
 }
 
-// ইঞ্জিন ইনিশিয়ালাইজেশন
+// ইঞ্জিন গ্লোবাল এক্সপোজার
+window.PlayerEngine = {
+    generateTable: generateGameTable
+};
+
+// ইঞ্জিন ইনিশিয়ালাইজেশন
 document.addEventListener("DOMContentLoaded", () => {
     generateGameTable('Both');
+    setupCoinSelectors();
     secureLogoutRouter();
     simulateFirebaseLiveResult();
-    
-    // ভিউ কন্ট্রোল বাটন লিসেনার (Both, Digit, Word)
-    document.querySelectorAll('.view-by-btn, [data-mode]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const mode = this.getAttribute('data-mode') || this.innerText.trim();
-            if(['Both', 'Digit', 'Word'].includes(mode)) generateGameTable(mode);
-        });
-    });
 });
