@@ -1,7 +1,7 @@
 <!-- ==========================================================================
      🔑 PROJECT: A-TO-Z BOMBAY PLAY ZONE (A-TO-Z-PATTI)
      📁 FILE: player-dashboard.html
-     📌 VERSION: v3.0.0 (Master Security & Responsive Light Integration)
+     📌 VERSION: v3.1.0 [LOG #2200 MASTER CONTROL]
      ========================================================================== -->
 <!DOCTYPE html>
 <html lang="bn" dir="ltr">
@@ -20,6 +20,7 @@
             --gold-glow: rgba(255, 193, 7, 0.4);
             --border-color: rgba(255, 255, 255, 0.1);
             --text-white: #ffffff;
+            --neon-accent: #00ffcc;
         }
 
         /* সিকিউরিটি প্রোটেকশন: টেক্সট সিলেক্ট বন্ধ করা */
@@ -32,7 +33,6 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-dark-blue);
-            /* ইন্টারন্যাশনাল মোড: ব্যাকগ্রাউন্ডে থ্রি-ডি ডাইনামিক লাইট আভা এনিমেশন */
             background: radial-gradient(circle at 50% 50%, #0d1b3a 0%, #020617 70%);
             background-size: 200% 200%;
             animation: glowAnimation 12s ease infinite;
@@ -107,7 +107,7 @@
             100% { transform: scale(0.9); opacity: 0.7; }
         }
 
-        /* ------------------ মেইন কন্টেন্ট এরিয়া (Universal Auto-Fit) ------------------ */
+        /* ------------------ মেইন কন্টেন্ট এরিয়া ------------------ */
         .main-container {
             flex: 1;
             display: flex;
@@ -116,12 +116,12 @@
             position: relative;
         }
 
-        /* টপ বার (ব্যালেন্স সেকশন) */
+        /* টপ বার (ব্যালেন্স ও ৩-মোড লাইভ রেজাল্ট বক্স) */
         .topbar {
             background-color: rgba(11, 19, 43, 0.85);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid #1e3a8a;
-            padding: 12px 25px;
+            padding: 10px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -129,11 +129,30 @@
         .profile-section { display: flex; align-items: center; gap: 10px; }
         .avatar { width: 35px; height: 35px; background: var(--gold-bright); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; }
         
-        .stats-container { display: flex; gap: 30px; flex-wrap: wrap; }
-        .stat-box { display: flex; align-items: center; gap: 10px; }
-        .stat-box i { color: var(--gold-bright); font-size: 1.3rem; }
-        .stat-label { font-size: 0.8rem; color: #94a3b8; }
-        .stat-value { font-size: 1.1rem; font-weight: bold; }
+        .stats-container { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+        .stat-box { display: flex; align-items: center; gap: 8px; }
+        .stat-box i { color: var(--gold-bright); font-size: 1.2rem; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; }
+        .stat-value { font-size: 1rem; font-weight: bold; }
+
+        /* ডাইনামিক ৩-মোড লাইভ রেজাল্ট বক্স ক্লাস (#2200 UPDATE) */
+        .live-mode-status-wrapper {
+            display: flex;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .mode-status-item {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--neon-accent);
+            padding: 2px 6px;
+            border-right: 1px solid #334;
+        }
+        .mode-status-item:last-child { border-right: none; }
+        .mode-status-item span { color: #fff; font-weight: bold; }
 
         .btn-logout {
             background: transparent;
@@ -148,7 +167,7 @@
         }
         .btn-logout:hover { background: #ef4444; border-color: #ef4444; }
 
-        /* ワークスペース গ্রিড (মোবাইল এবং জায়ান্ট ডিসপ্লে রেসপনসিভ) */
+        /* ワークスペース গ্রিড */
         .workspace {
             flex: 1;
             display: grid;
@@ -190,7 +209,7 @@
             width: 100%;
             border-collapse: collapse;
             text-align: center;
-            font-size: calc(0.6vw + 0.5rem); /* ডাইনামিক ফন্ট স্কেলিং ডিসপ্লে অনুযায়ী */
+            font-size: calc(0.6vw + 0.5rem);
         }
         th {
             background-color: #1e293b;
@@ -210,7 +229,6 @@
         }
         td:hover { background-color: rgba(255, 193, 7, 0.15); }
         td.selected { background-color: #1d4ed8 !important; color: #fff !important; font-weight: bold; box-shadow: 0 0 10px rgba(59,130,246,0.6); }
-        td.overlimit-red { background-color: #ef4444 !important; color: #fff !important; }
 
         /* ------------------ রাইট বেটিং প্যানেল ------------------ */
         .betting-panel {
@@ -251,25 +269,35 @@
             color: white;
             box-shadow: 0 0 8px rgba(59,130,246,0.5);
         }
-        .bet-input-box {
-            width: 100%;
-            background: #0f172a;
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 1rem;
+
+        /* কয়েন বাটন লেআউট (#2200 আর্কিটেকচার সিঙ্ক) */
+        .coin-btn {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #00ffcc;
+            color: #00ffcc;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 4px rgba(0,255,204,0.3);
+            transition: all 0.2s;
         }
+        .coin-btn.selected-coin {
+            background: #00ffcc; color: #000;
+            box-shadow: 0 0 10px #00ffcc;
+            transform: scale(1.1);
+        }
+
+        /* সিলেক্ট আইটেম ড্র ম্যাট্রিক্স কন্টেনার */
         .selection-display {
             background: #0f172a;
             border-radius: 6px;
             padding: 12px;
-            min-height: 60px;
+            min-height: 120px;
             font-size: 0.9rem;
             color: #ffc107;
             border: 1px dashed rgba(255, 193, 7, 0.4);
-            font-family: monospace;
+            overflow-y: auto;
         }
         .action-buttons { display: flex; gap: 8px; margin-top: auto; }
         .btn-action {
@@ -282,9 +310,7 @@
             font-size: 0.95rem;
         }
         .btn-reset { background: #475569; color: white; }
-        .btn-submit { background: #22c55e; color: white; box-shadow: 0 0 10px rgba(34,197,94,0.4); }
 
-        /* নোটিশ বার */
         .footer-notice {
             background: #1e293b;
             padding: 8px 20px;
@@ -296,11 +322,10 @@
             border-top: 1px solid var(--border-color);
         }
 
-        /* 📱 মোবাইল এবং ট্যাবলেট রেসপনসিভ ব্রেকপয়েন্ট */
         @media (max-width: 768px) {
             body { height: auto; overflow-y: auto; }
             .workspace { grid-template-columns: 1fr; height: auto; overflow: visible; }
-            .sidebar { display: none; } /* মোবাইল অ্যাপ মোডে নিচের নেভিগেশন বা আলাদা বাটন থাকবে */
+            .sidebar { display: none; }
             .stats-container { gap: 10px; }
             table { font-size: 0.85rem; }
         }
@@ -314,14 +339,13 @@
             <li class="menu-item active" id="menuPlayBoard"><i class="fa-solid fa-table-cells"></i> Play Board</li>
             <li class="menu-item"><i class="fa-solid fa-wallet"></i> Withdraw Funds</li>
             <li class="menu-item"><i class="fa-solid fa-file-invoice"></i> Transaction Report</li>
-            <li class="menu-item" id="menuAccounts"><i class="fa-solid fa-money-check-dollar"></i> Account Balance</li>
+            <li class="menu-item" id="menuAccounts"><i class="fa-solid fa-money-check-dollar"></i> Account Balance & Comm.</li>
             <li class="menu-item"><i class="fa-solid fa-history"></i> Play History</li>
             <li class="menu-item"><i class="fa-solid fa-square-poll-vertical"></i> Results</li>
             <li class="menu-item" id="menuSettings"><i class="fa-solid fa-gear"></i> Settings</li>
             <li class="menu-item"><i class="fa-solid fa-circle-question"></i> Help & Support</li>
         </ul>
         
-        <!-- লাইভ ড্র স্ট্যাটাস (ফায়ারবেস সিঙ্ক আইডি যুক্ত) -->
         <div class="live-draw-box">
             <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px;"><span class="live-pulse"></span> Live Draw Status</div>
             <div style="font-size: 0.75rem; color: #94a3b8;" id="txtDrawTime">Draw Time: Loading...</div>
@@ -339,6 +363,14 @@
                 <div class="avatar"><i class="fa-solid fa-user"></i></div>
                 <div id="lblPlayerId">Profile: Loading...</div>
             </div>
+
+            <!-- ৩টি মোড লাইভ রেজাল্ট বক্স লুপ (#2200 NEW DESIGN) -->
+            <div class="live-mode-status-wrapper">
+                <div class="mode-status-item">BOTH: <span id="lblLiveBoth">ACTIVE</span></div>
+                <div class="mode-status-item">WORD: <span id="lblLiveWord">A-J</span></div>
+                <div class="mode-status-item">DIGIT: <span id="lblLiveDigit">0-9</span></div>
+            </div>
+
             <div class="stats-container">
                 <div class="stat-box">
                     <i class="fa-solid fa-wallet"></i>
@@ -352,14 +384,6 @@
                     <div>
                         <div class="stat-label">Winning Balance</div>
                         <div class="stat-value" id="txtWinPoints" style="color: #22c55e;">৳0</div>
-                    </div>
-                </div>
-                <!-- আপনার ২য় চিরকুট অনুযায়ী সেলস কমিশন ডিসপ্লে কলাম (Account Balance-এর সাথে ম্যাপড) -->
-                <div class="stat-box" id="commissionDisplayBox">
-                    <i class="fa-solid fa-percent"></i>
-                    <div>
-                        <div class="stat-label">Player Commission</div>
-                        <div class="stat-value" id="txtCommissionPoints" style="color: #ffc107;">৳0.00</div>
                     </div>
                 </div>
             </div>
@@ -394,44 +418,47 @@
             <div class="betting-panel">
                 <div>
                     <div class="panel-title">Number Range</div>
-                    <div class="panel-row" style="margin-top:5px;">
-                        <div class="btn-bet-opt active" style="border-color:#22c55e;">A<br><small>1-25</small></div>
-                        <div class="btn-bet-opt" style="border-color:#3b82f6;">B<br><small>26-50</small></div>
-                        <div class="btn-bet-opt" style="border-color:#f97316;">C<br><small>51-75</small></div>
-                        <div class="btn-bet-opt" style="border-color:#a855f7;">D<br><small>76-100</small></div>
+                    <div class="panel-row" style="margin-top:5px;" id="numberRangeBox">
+                        <button class="btn-bet-opt active" style="border-color:#22c55e;">A<br><small>1-25</small></button>
+                        <button class="btn-bet-opt" style="border-color:#3b82f6;">B<br><small>26-50</small></button>
+                        <button class="btn-bet-opt" style="border-color:#f97316;">C<br><small>51-75</small></button>
+                        <button class="btn-bet-opt" style="border-color:#a855f7;">D<br><small>76-100</small></button>
                     </div>
                 </div>
 
                 <div>
                     <div class="panel-title">Bet Type</div>
-                    <div class="panel-row" style="margin-top:5px;">
-                        <button class="btn-bet-opt active" id="btnTypeSingle" onclick="selectBetType('Single')">Single</button>
-                        <button class="btn-bet-opt" id="btnTypeJora" onclick="selectBetType('Jora')">Jora</button>
-                        <button class="btn-bet-opt" id="btnTypeTriple" onclick="selectBetType('Triple')">Triple</button>
+                    <div class="panel-row" style="margin-top:5px;" id="betTypeBox">
+                        <button class="btn-bet-opt active">Single</button>
+                        <button class="btn-bet-opt">Jora</button>
+                        <button class="btn-bet-opt">Triple</button>
                     </div>
                 </div>
 
+                <!-- কয়েন মাল্টিপ্লায়ার বাটন প্যানেল (২ থেকে ৫০০) -->
                 <div>
-                    <div class="panel-title">Bet Amount</div>
-                    <div class="panel-row" style="margin-top:5px; gap:4px;">
-                        <button class="btn-bet-opt" onclick="setAmount(10)">৳10</button>
-                        <button class="btn-bet-opt" onclick="setAmount(20)">৳20</button>
-                        <button class="btn-bet-opt" onclick="setAmount(50)">৳50</button>
-                        <button class="btn-bet-opt" onclick="setAmount(100)">৳100</button>
+                    <div class="panel-title">Select Multiply Coin</div>
+                    <div class="panel-row" style="margin-top:8px; gap:6px; justify-content: center;">
+                        <button class="coin-btn selected-coin" data-coin-val="2">২</button>
+                        <button class="coin-btn" data-coin-val="5">৫</button>
+                        <button class="coin-btn" data-coin-val="10">১০</button>
+                        <button class="coin-btn" data-coin-val="20">২০</button>
+                        <button class="coin-btn" data-coin-val="50">৫০</button>
+                        <button class="coin-btn" data-coin-val="100">১০০</button>
+                        <button class="coin-btn" data-coin-val="500">৫০০</button>
                     </div>
-                    <input type="number" id="betAmountInput" class="bet-input-box" style="margin-top:8px;" placeholder="Enter custom amount">
                 </div>
 
+                <!-- সিলেক্ট আইটেম ড্র ম্যাট্রিক্স লাইভ সামারি প্যানেল -->
                 <div>
-                    <div class="panel-title">Selected Items (Draw Matrix)</div>
-                    <div class="selection-display" id="selectedPattiDisplay">
-                        No Counter / Patti Active
+                    <div class="panel-title">Select Item Draw Matrix</div>
+                    <div class="selection-display" id="selectedItemsContainer">
+                        No Patti Active / Counter Zero
                     </div>
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn-action btn-reset" onclick="resetSelection()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-                    <button class="btn-action btn-submit" id="btnSubmitBet"><i class="fa-solid fa-paper-plane"></i> Submit Bet</button>
+                    <button class="btn-action btn-reset" onclick="resetSelection()"><i class="fa-solid fa-rotate-left"></i> Reset Board</button>
                 </div>
             </div>
 
@@ -440,7 +467,7 @@
         <!-- ফুটার নোটিশ -->
         <div class="footer-notice">
             <i class="fa-solid fa-bullhorn" style="color:var(--gold-bright)"></i>
-            <span>Note: Please place your bet before the draw time. Secure Module Protected.</span>
+            <span>Note: Place bets within structural limit. Secure Module Protected #2200.</span>
         </div>
     </div>
 
@@ -455,13 +482,12 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
 
-        // ফায়ারবেস রিয়েল-টাইম ব্যালেন্স গেটওয়ে (৪0৪ এবং রিডাইরেক্ট ফিক্স)
+        // ফায়ারবেস রিয়েল-টাইম ট্র্যাক ও ইন্টারনাল সেশন হ্যান্ডলার
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const username = user.email.split('@')[0];
                 document.getElementById('lblPlayerId').innerText = `Profile: ${username.toUpperCase()}`;
 
-                // রিয়েল-টাইম ব্যালেন্স এবং সেলস কমিশন লিসেনার সিঙ্ক
                 const userRef = ref(database, `users/${username}`);
                 onValue(userRef, (snapshot) => {
                     if (snapshot.exists()) {
@@ -469,48 +495,28 @@
                         document.getElementById('txtPlayPoints').innerText = `৳${data.play_balance || "0"}`;
                         document.getElementById('txtWinPoints').innerText = `৳${data.winning_balance || "0"}`;
                         
-                        // টোটাল সেলের উপর বেস করে ডাইনামিক কমিশন ক্যালকুলেটর ডিসপ্লে
-                        const totalSale = data.total_sale || 0;
-                        const commRate = window.GameGlobals ? window.GameGlobals.playerCommissionRate : 5;
-                        const calculatedCommission = (totalSale * commRate) / 100;
-                        document.getElementById('txtCommissionPoints').innerText = `৳${calculatedCommission.toFixed(2)}`;
+                        // সেভ করা ডাটা গ্লোবাল ভেরিয়েবলে সেট রাখা (উইন্ডো ফাংশন কলিংয়ের জন্য)
+                        window.UserSessionData = data;
                     }
                 });
 
-                // মাস্টার লাইভ সিঙ্ক ফাংশন রান
                 initFirebaseLiveSync(database, ref, onValue);
 
             } else {
-                // মেইন সার্ভার বা গিটহাবের রুট লগইনে রিডাইরেকশন নিশ্চিতকরণ
-                window.location.href = "index.html";
-            }
-        });
-
-        // লগআউট প্রোটোকল
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            auth.signOut().then(() => {
-                window.location.href = "index.html";
-            });
-        });
-
-        // 🔒 হাই-সিকিউরিটি গেটওয়ে স্ক্রিপ্ট ইন্টিগ্রেশন (এডিট, ইন্সপেক্ট ও স্ক্রিনশট লক)
-        document.addEventListener('contextmenu', event => event.preventDefault()); // রাইট ক্লিক লক
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) || (e.ctrlKey && e.key === 'U')) {
-                e.preventDefault(); // ইন্সপেক্ট এলিমেন্ট ও সোর্স কোড লক
-            }
-            if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
-                e.preventDefault(); // প্রিন্ট স্ক্রিন/স্ক্রিনশট কম্যান্ড ইন্টারসেপ্ট
-                alert("Security Alert: Screen Capture is disabled for player protection.");
+                // গিটহাব পেজেস পাথ প্রোটেকশন
+                let repoName = window.location.pathname.split('/')[1];
+                window.location.href = window.location.hostname.includes('github.io') 
+                    ? window.location.origin + '/' + repoName + '/login.html' 
+                    : './login.html';
             }
         });
     </script>
 
-    <!-- আপনার কোর ইঞ্জিনের ফাংশন ফাইল লোডার -->
+    <!-- জাভাস্ক্রিপ্ট ফাইল কানেকশন -->
+    <script src="player.js"></script>
     <script src="game_engine.js"></script>
 
     <script>
-        // গেম ভিউ মোড পরিবর্তনকারী গ্লোবাল ইন্টারফেস ব্রিজ
         function changeMode(mode, btn) {
             document.querySelectorAll('.board-controls .btn-ctrl').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
@@ -519,31 +525,17 @@
             }
         }
 
-        // বেটিং প্যানেলের শর্টকাট অ্যামাউন্ট হ্যান্ডলার
-        function setAmount(amt) {
-            const input = document.getElementById('betAmountInput');
-            if (input) {
-                input.value = amt;
-                if (typeof runLimitCheck === "function") runLimitCheck();
-            }
-        }
-
-        // বেট টাইপ সিলেক্টর সুইচ
-        function selectBetType(type) {
-            document.querySelectorAll('[id^="btnType"]').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btnType${type}`).classList.add('active');
-        }
-
-        // সিলেকশন ক্লিয়ার করার গ্লোবাল ব্রিজ
         function resetSelection() {
-            const display = document.getElementById('selectedPattiDisplay');
-            if (display) display.innerHTML = "No Counter / Patti Active";
-            const activeCell = document.querySelector('.patti-cell.selected') || document.querySelector('.patti-cell.overlimit-red');
-            if (activeCell) {
-                activeCell.classList.remove('selected');
-                activeCell.classList.remove('overlimit-red');
+            const container = document.getElementById('selectedItemsContainer');
+            if (container) container.innerHTML = "No Patti Active / Counter Zero";
+            if (window.activeBets) {
+                window.activeBets = {};
+                document.querySelectorAll('td.patti-cell').forEach(cell => {
+                    cell.style.color = "";
+                    const token = cell.querySelector('.bet-anim-token');
+                    if(token) token.remove();
+                });
             }
-            document.getElementById('betAmountInput').value = '';
         }
     </script>
 </body>
