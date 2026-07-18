@@ -30,316 +30,15 @@
             -ms-user-select: none;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark-blue);
-            background: radial-gradient(circle at 50% 50%, #0d1b3a 0%, #020617 70%);
-            background-size: 200% 200%;
-            animation: glowAnimation 12s ease infinite;
-            color: var(--text-white);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+      <body>
 
-        @keyframes glowAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* ------------------ লেফট সাইডবার (Left Sidebar) ------------------ */
-        .sidebar {
-            width: 240px;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            justify-content: space-between;
-            z-index: 10;
-        }
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .menu-item {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-        .menu-item i { width: 20px; text-align: center; }
-        .menu-item:hover, .menu-item.active {
-            background-color: #1e293b;
-            color: var(--text-white);
-            border-left: 4px solid #3b82f6;
-        }
-        
-        /* লাইভ ড্র স্ট্যাটাস বক্স */
-        .live-draw-box {
-            background: rgba(15, 23, 42, 0.6);
-            margin: 15px;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        .live-pulse {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: #ef4444;
-            border-radius: 50%;
-            margin-right: 5px;
-            box-shadow: 0 0 8px #ef4444;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.7; }
-        }
-
-        /* ------------------ মেইন কন্টেন্ট এরিয়া ------------------ */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* টপ বার (ব্যালেন্স ও ৩-মোড লাইভ রেজাল্ট বক্স) */
-        .topbar {
-            background-color: rgba(11, 19, 43, 0.85);
-            backdrop-filter: blur(10px);
-            border-bottom: 2px solid #1e3a8a;
-            padding: 10px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .profile-section { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 35px; height: 35px; background: var(--gold-bright); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; }
-        
-        .stats-container { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
-        .stat-box { display: flex; align-items: center; gap: 8px; }
-        .stat-box i { color: var(--gold-bright); font-size: 1.2rem; }
-        .stat-label { font-size: 0.75rem; color: #94a3b8; }
-        .stat-value { font-size: 1rem; font-weight: bold; }
-
-        /* ডাইনামিক ৩-মোড লাইভ রেজাল্ট বক্স ক্লাস (#2200 UPDATE) */
-        .live-mode-status-wrapper {
-            display: flex;
-            gap: 10px;
-            background: rgba(15, 23, 42, 0.9);
-            padding: 4px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-        .mode-status-item {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: var(--neon-accent);
-            padding: 2px 6px;
-            border-right: 1px solid #334;
-        }
-        .mode-status-item:last-child { border-right: none; }
-        .mode-status-item span { color: #fff; font-weight: bold; }
-
-        .btn-logout {
-            background: transparent;
-            color: #f1f5f9;
-            border: 1px solid var(--border-color);
-            padding: 6px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-logout:hover { background: #ef4444; border-color: #ef4444; }
-
-        /* ワークスペース গ্রিড */
-        .workspace {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            overflow: hidden;
-            background-color: transparent;
-        }
-
-        /* মিডল গেমবোর্ড এরিয়া */
-        .board-section {
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .board-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            padding: 8px 15px;
-            border-radius: 6px;
-        }
-        .control-group { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; }
-        .btn-ctrl { background: #1e293b; border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-ctrl.active { background: #1d4ed8; border-color: #3b82f6; }
-
-        /* ডাইনামিক ম্যাট্রিক্স টেবিল */
-        .table-responsive {
-            flex: 1;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(5px);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            overflow: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-            font-size: calc(0.6vw + 0.5rem);
-        }
-        th {
-            background-color: #1e293b;
-            color: var(--gold-bright);
-            padding: 10px 6px;
-            position: sticky;
-            top: 0;
-            border: 1px solid var(--border-color);
-            font-weight: 600;
-        }
-        td {
-            border: 1px solid var(--border-color);
-            padding: 8px 4px;
-            cursor: pointer;
-            vertical-align: top;
-            transition: background 0.15s;
-        }
-        td:hover { background-color: rgba(255, 193, 7, 0.15); }
-        td.selected { background-color: #1d4ed8 !important; color: #fff !important; font-weight: bold; box-shadow: 0 0 10px rgba(59,130,246,0.6); }
-
-        /* ------------------ রাইট বেটিং প্যানেল ------------------ */
-        .betting-panel {
-            background-color: rgba(11, 19, 43, 0.9);
-            border-left: 1px solid var(--border-color);
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
-        }
-        .panel-title {
-            font-size: 0.85rem;
-            background: #1e293b;
-            padding: 6px 10px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            color: #cbd5e1;
-            font-weight: bold;
-        }
-        .panel-row { display: flex; gap: 6px; flex-wrap: wrap; }
-        .btn-bet-opt {
-            flex: 1;
-            min-width: 55px;
-            background: #0f172a;
-            border: 1px solid var(--border-color);
-            color: #94a3b8;
-            padding: 8px 4px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-        }
-        .btn-bet-opt.active {
-            background: #1e3a8a;
-            border-color: #3b82f6;
-            color: white;
-            box-shadow: 0 0 8px rgba(59,130,246,0.5);
-        }
-
-        /* কয়েন বাটন লেআউট (#2200 আর্কিটেকচার সিঙ্ক) */
-        .coin-btn {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border: 1px solid #00ffcc;
-            color: #00ffcc;
-            border-radius: 50%;
-            width: 40px; height: 40px;
-            font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 4px rgba(0,255,204,0.3);
-            transition: all 0.2s;
-        }
-        .coin-btn.selected-coin {
-            background: #00ffcc; color: #000;
-            box-shadow: 0 0 10px #00ffcc;
-            transform: scale(1.1);
-        }
-
-        /* সিলেক্ট আইটেম ড্র ম্যাট্রিক্স কন্টেনার */
-        .selection-display {
-            background: #0f172a;
-            border-radius: 6px;
-            padding: 12px;
-            min-height: 120px;
-            font-size: 0.9rem;
-            color: #ffc107;
-            border: 1px dashed rgba(255, 193, 7, 0.4);
-            overflow-y: auto;
-        }
-        .action-buttons { display: flex; gap: 8px; margin-top: auto; }
-        .btn-action {
-            flex: 1;
-            padding: 12px;
-            border-radius: 6px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .btn-reset { background: #475569; color: white; }
-
-        .footer-notice {
-            background: #1e293b;
-            padding: 8px 20px;
-            font-size: 0.8rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        @media (max-width: 768px) {
-            body { height: auto; overflow-y: auto; }
-            .workspace { grid-template-columns: 1fr; height: auto; overflow: visible; }
-            .sidebar { display: none; }
-            .stats-container { gap: 10px; }
-            table { font-size: 0.85rem; }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- 1. লেফট সাইডবার মেনু -->
+    <!-- ১. লেফট সাইডবার মেনু -->
     <div class="sidebar">
         <ul class="sidebar-menu">
             <li class="menu-item active" id="menuPlayBoard"><i class="fa-solid fa-table-cells"></i> Play Board</li>
             <li class="menu-item"><i class="fa-solid fa-wallet"></i> Withdraw Funds</li>
             <li class="menu-item"><i class="fa-solid fa-file-invoice"></i> Transaction Report</li>
-            <li class="menu-item" id="menuAccounts"><i class="fa-solid fa-money-check-dollar"></i> Account Balance & Comm.</li>
+            <li class="menu-item" id="menuAccounts"><i class="fa-solid fa-money-check-dollar"></i> Account Balance</li>
             <li class="menu-item"><i class="fa-solid fa-history"></i> Play History</li>
             <li class="menu-item"><i class="fa-solid fa-square-poll-vertical"></i> Results</li>
             <li class="menu-item" id="menuSettings"><i class="fa-solid fa-gear"></i> Settings</li>
@@ -354,7 +53,7 @@
         </div>
     </div>
 
-    <!-- 2. ডানদিকের প্রধান কন্টেন্ট উইন্ডো -->
+    <!-- ২. প্রধান কন্টেন্ট উইন্ডো -->
     <div class="main-container">
         
         <!-- টপ বার -->
@@ -364,11 +63,11 @@
                 <div id="lblPlayerId">Profile: Loading...</div>
             </div>
 
-            <!-- ৩টি মোড লাইভ রেজাল্ট বক্স লুপ (#2200 NEW DESIGN) -->
+            <!-- ৩টি ডাইনামিক মোড স্ট্যাটাস বক্স (#2200 FIXED UI) -->
             <div class="live-mode-status-wrapper">
-                <div class="mode-status-item">BOTH: <span id="lblLiveBoth">ACTIVE</span></div>
-                <div class="mode-status-item">WORD: <span id="lblLiveWord">A-J</span></div>
-                <div class="mode-status-item">DIGIT: <span id="lblLiveDigit">0-9</span></div>
+                <div class="mode-status-item">BOTH: <span id="lblLiveBoth">---</span></div>
+                <div class="mode-status-item">WORD: <span id="lblLiveWord">-</span></div>
+                <div class="mode-status-item">DIGIT: <span id="lblLiveDigit">-</span></div>
             </div>
 
             <div class="stats-container">
@@ -390,7 +89,7 @@
             <button class="btn-logout" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
         </div>
 
-        <!-- ワークスペース -->
+        <!-- ワークスペース (ম্যাট্রিক্স গ্রিড) -->
         <div class="workspace">
             
             <!-- গেম বোর্ড ফিল্ড -->
@@ -400,21 +99,22 @@
                         <button class="btn-ctrl" style="background:#d97706;" id="btnInstantPrint"><i class="fa-solid fa-print"></i> Print</button>
                         <span style="color:#ef4444; font-weight:bold;"><span class="live-pulse"></span> LIVE</span>
                     </div>
+                    <!-- ভিউ ট্রিগার বাটন সিঙ্ক ফিক্স -->
                     <div class="control-group">
                         <span>View By:</span>
-                        <button class="btn-ctrl active" data-mode="Both" onclick="changeMode('Both', this)">Both</button>
-                        <button class="btn-ctrl" data-mode="Word" onclick="changeMode('Word', this)">Word</button>
-                        <button class="btn-ctrl" data-mode="Digit" onclick="changeMode('Digit', this)">Digit</button>
+                        <button class="btn-ctrl view-by-btn active" data-mode="Both">Both</button>
+                        <button class="btn-ctrl view-by-btn" data-mode="Word">Word</button>
+                        <button class="btn-ctrl view-by-btn" data-mode="Digit">Digit</button>
                     </div>
                 </div>
 
                 <!-- ডায়নামিক ম্যাট্রিক্স টেবিল কন্টেনার -->
                 <div class="table-responsive" id="gameTableWrapper">
-                    <!-- টেবিল স্ক্রিপ্ট দ্বারা জেনারেট হবে -->
+                    <!-- এখানে গেম ইঞ্জিন থেকে ২২ লাইনের মেইন টেবিল রেন্ডার হবে -->
                 </div>
             </div>
 
-            <!-- ডানদিকের বেটিং কন্ট্রোল প্যানেল -->
+            <!-- ডানদিকের বেٹنگ কন্ট্রোল প্যানেল -->
             <div class="betting-panel">
                 <div>
                     <div class="panel-title">Number Range</div>
@@ -435,7 +135,7 @@
                     </div>
                 </div>
 
-                <!-- কয়েন মাল্টিপ্লায়ার বাটন প্যানেল (২ থেকে ৫০০) -->
+                <!-- কয়েন মাল্টিপ্লায়ার বাটন প্যানেল -->
                 <div>
                     <div class="panel-title">Select Multiply Coin</div>
                     <div class="panel-row" style="margin-top:8px; gap:6px; justify-content: center;">
@@ -449,7 +149,7 @@
                     </div>
                 </div>
 
-                <!-- সিলেক্ট আইটেম ড্র ম্যাট্রিক্স লাইভ সামারি প্যানেল -->
+                <!-- সিলেক্ট আইটেম ড্র ম্যাট্রিক্স লাইভ সামারি -->
                 <div>
                     <div class="panel-title">Select Item Draw Matrix</div>
                     <div class="selection-display" id="selectedItemsContainer">
@@ -458,7 +158,7 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn-action btn-reset" onclick="resetSelection()"><i class="fa-solid fa-rotate-left"></i> Reset Board</button>
+                    <button class="btn-action btn-reset" id="btnResetBoard"><i class="fa-solid fa-rotate-left"></i> Reset Board</button>
                 </div>
             </div>
 
@@ -471,7 +171,7 @@
         </div>
     </div>
 
-    <!-- ফায়ারবেস ইন্টিগ্রেশন এবং আপনার কোরের গেম লজিক মার্জার -->
+    <!-- ফায়ারবেস ইন্টিগ্রেশন মডিউল -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -482,7 +182,6 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
 
-        // ফায়ারবেস রিয়েল-টাইম ট্র্যাক ও ইন্টারনাল সেশন হ্যান্ডলার
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const username = user.email.split('@')[0];
@@ -494,8 +193,6 @@
                         const data = snapshot.val();
                         document.getElementById('txtPlayPoints').innerText = `৳${data.play_balance || "0"}`;
                         document.getElementById('txtWinPoints').innerText = `৳${data.winning_balance || "0"}`;
-                        
-                        // সেভ করা ডাটা গ্লোবাল ভেরিয়েবলে সেট রাখা (উইন্ডো ফাংশন কলিংয়ের জন্য)
                         window.UserSessionData = data;
                     }
                 });
@@ -503,7 +200,6 @@
                 initFirebaseLiveSync(database, ref, onValue);
 
             } else {
-                // গিটহাব পেজেস পাথ প্রোটেকশন
                 let repoName = window.location.pathname.split('/')[1];
                 window.location.href = window.location.hostname.includes('github.io') 
                     ? window.location.origin + '/' + repoName + '/login.html' 
@@ -512,31 +208,61 @@
         });
     </script>
 
-    <!-- জাভাস্ক্রিপ্ট ফাইল কানেকশন -->
-    <script src="player.js"></script>
+    <!-- ডিপেন্ডেন্সি স্ক্রিপ্ট কানেকশন -->
     <script src="game_engine.js"></script>
 
+    <!-- ইন্টারনাল ইভেন্ট লিসেনার সিঙ্ক (মেমোরি লক রেন্ডারার) -->
     <script>
-        function changeMode(mode, btn) {
-            document.querySelectorAll('.board-controls .btn-ctrl').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            if (window.PlayerEngine && window.PlayerEngine.generateTable) {
-                window.PlayerEngine.generateTable(mode);
-            }
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            // ১. ভিউ চেঞ্জার বাটন লিসেনার - A2Z_Engine এর সাথে সিঙ্ক করা
+            document.querySelectorAll('.view-by-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-by-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const mode = this.getAttribute('data-mode');
+                    // লক প্রোটোকল চেক ও রেন্ডার ট্রিগার
+                    if (window.A2Z_Engine && typeof window.A2Z_Engine.generateTable === 'function') {
+                        window.A2Z_Engine.generateTable(mode);
+                    } else if (window.PlayerEngine && typeof window.PlayerEngine.generateTable === 'function') {
+                        window.PlayerEngine.generateTable(mode);
+                    }
+                });
+            });
 
-        function resetSelection() {
-            const container = document.getElementById('selectedItemsContainer');
-            if (container) container.innerHTML = "No Patti Active / Counter Zero";
-            if (window.activeBets) {
-                window.activeBets = {};
-                document.querySelectorAll('td.patti-cell').forEach(cell => {
-                    cell.style.color = "";
-                    const token = cell.querySelector('.bet-anim-token');
-                    if(token) token.remove();
+            // ২. রিসেট বাটন লিসেনার
+            const resetBtn = document.getElementById('btnResetBoard');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    const container = document.getElementById('selectedItemsContainer');
+                    if (container) container.innerHTML = "No Patti Active / Counter Zero";
+                    
+                    // একটিভ বেট মেমোরি ক্লিয়ার করা
+                    const targetEngine = window.A2Z_Engine || window.PlayerEngine;
+                    if (targetEngine && targetEngine.activeBets) {
+                        targetEngine.activeBets = {};
+                    }
+                    if (window.activeBets) window.activeBets = {};
+
+                    document.querySelectorAll('.patti-cell').forEach(cell => {
+                        cell.classList.remove('selected');
+                        const token = cell.querySelector('.bet-anim-token');
+                        if(token) token.remove();
+                    });
                 });
             }
-        }
+
+            // প্রথমবার পেজ লোডের সময় বোথ (Both) মোড ম্যাট্রিক্স অটো-ট্রিগার
+            setTimeout(() => {
+                const targetEngine = window.A2Z_Engine || window.PlayerEngine;
+                if (targetEngine && typeof targetEngine.generateTable === 'function') {
+                    console.log("[LOCK_ID: 2200-A2Z-STABLE] Initializing Board Matrix...");
+                    targetEngine.generateTable('Both');
+                } else {
+                    console.error("[LOCK_ID: 2200] Engine core not loaded yet.");
+                }
+            }, 500);
+        });
     </script>
 </body>
 </html>
