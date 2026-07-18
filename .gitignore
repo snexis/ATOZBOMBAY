@@ -1,17 +1,24 @@
 # ==========================================================================
-# ATOZ BOMBAY - GIT IGNORE ARCHITECTURE (v5.6 - COMPLETE PROTECTION)
+# 🔑 PROJECT: A-TO-Z BOMBAY PLAY ZONE (A-TO-Z-PATTI)
+# 📁 FILE: .gitignore
+# 📌 VERSION: v5.7.0 [LOG #2200 COMPLETE REVENUE & SOURCE PROTECTION]
 # ==========================================================================
 
-# ১. ওএস বা সিস্টেম জেনারেটেড ফাইল (সিস্টেম পাথ ও আইপি ডিরেক্টরি হাইড রাখার জন্য)
+# ১. ওএস বা সিস্টেম জেনারেটেড ফাইল (সিস্টেম পাথ ও লোকাল ডিরেক্টরি সিক্রেসি)
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
 desktop.ini
 $RECYCLE.BIN/
 *.bak
 *.tmp
+*.sql
+*.sqlite
 
-# ২. এডিটর এবং আইডিই (IDE) কনফিগারেশন ফাইল (কোড স্ট্রাকচার ও লোকাল সেটিংস প্রটেকশন)
+# ২. এডিটর এবং আইডিই (IDE) কনফিগারেশন ফাইল (কোড স্ট্রাকচার ও ওয়ার্কস্পেস প্রোটেকশন)
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.suo
 *.ntvs*
@@ -22,14 +29,16 @@ $RECYCLE.BIN/
 .buildpath
 .project
 .settings/
+.wbproj/
 
-# ৩. লোকাল এনভায়রনমেন্ট, এপিআই কি এবং সিক্রেট ব্যাকআপ ফাইল
+# ৩. লোকাল এনভায়রনমেন্ট, এপিআই কি এবং সিক্রেট ব্যাকআপ ফাইল (কোর গেটওয়ে প্রটেকশন)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 *.env
+*.env.bak
 config/local.json
 config/secrets.json
 /drafts/
@@ -38,6 +47,8 @@ config/secrets.json
 *credentials*.json
 *.pem
 *.key
+*.pfx
+*.cert
 
 # ৪. ফায়ারবেস ক্যাশ, লোকাল ডিবাগিং এবং ডিপ্লয়মেন্ট লগ ফাইল
 .firebase/
@@ -51,8 +62,18 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# ۵. নোড মডিউলস এবং বিল্ড ডিপেন্ডেন্সি (লোকাল সার্ভার রানার)
+# ৫. নোড মডিউলস এবং বিল্ড ডিপেন্ডেন্সি (লোকাল সার্ভার রানার)
 node_modules/
+jspm_packages/
 /dist/
 /build/
+/out/
 .pnpm-store/
+.next/
+.nuxt/
+
+# ৬. প্রজেক্ট স্পেসিফিক ডক ও এক্সেল শীট ব্যাকআপ (হিসাব-নিকাশ ও শিট প্রটেকশন)
+*.xlsx
+*.xls
+*.csv
+/financial_reports/
