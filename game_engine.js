@@ -7,7 +7,144 @@ const EngineConfig = {
     rows: 22,
     cols: 10
 };
+let gameMode = 'Both';    
 
+// ডাইনামিক হেডার রেজাল্ট রেন্ডারার (লাইভ আপডেট মোড)
+function updateRealTimeResultUI(liveData = null) {
+    if(liveData) {
+        window.LiveGameState.currentResult = liveData;
+    }
+    
+    const resultBox = document.getElementById('liveResultContainer') || document.querySelector('.player-commission-wrapper');
+    if (!resultBox) return;
+
+    resultBox.className = "live-result-header-block";
+    let resDisplay = "";
+    
+    if (gameMode === 'Digit') {
+        resDisplay = window.LiveGameState.currentResult.digit;
+    } else if (gameMode === 'Word') {
+        resDisplay = window.LiveGameState.currentResult.word;
+    } else {
+        resDisplay = `${window.LiveGameState.currentResult.patti} - ${window.LiveGameState.currentResult.word}`;
+    }
+
+    resultBox.innerHTML = `
+        <span style="color:#ffffff; margin-right:6px; font-size:14px;">Result:</span>
+        <span style="color:#00ffcc; font-weight:bold; font-size:16px;">${resDisplay}</span>
+        <span style="font-size:11px; color:#ffcc00; margin-left:8px;">(${window.LiveGameState.currentResult.time})</span>
+    `;
+}
+
+// টেবিল ও ভিউ বাই জেনারেশন
+function generateGameTable(mode = 'Both') {
+    gameMode = mode;
+    updateRealTimeResultUI();
+    
+    const wrapper = document.getElementById('gameTableWrapper');
+    if (!wrapper) return;
+
+    let html = `<table><thead><tr>`;
+    const colDigits = ['1','2','3','4','5','6','7','8','9','0'];
+    const colWords = ['A','B','C','D','E','F','G','H','I','J'];
+    
+    colDigits.forEach((col, idx) => {
+        let title = gameMode === 'Digit' ? `Col ${col}` : (gameMode === 'Word' ? `Col ${colWords[idx]}` : `${col} - ${colWords[idx]}`);
+        html += `<th>${title}</th>`;
+    });
+    html += `</tr></thead><tbody><tr class="single-row-header">`;
+    
+    colDigits.forEach((col, idx) => {
+        let singleVal = gameMode === 'Digit' ? col : (gameMode === 'Word' ? colWords[idx] : `${col}-${colWords[idx]}`);
+        let label = gameMode === 'Digit' ? col : (gameMode === 'Word' ? colWords[idx] : `${col}/${colWords[idx]}`);
+        html += `<td class="patti-cell single-cell" data-column="${col}" data-val="${singleVal}" data-type="Single" onclick="selectPattiCell(this)">${label} <br><small>(Single)</small></td>`;
+    });
+    html += `</tr>`;
+
+    for (let r = 0; r < EngineConfig.rows; r++) {
+        html += `<tr>`;
+        colDigits.forEach((col) => {
+            const pattiValue = PATTI_DATA[col][r] || '';
+            const wordValue = WORD_MAPPING[colWords[colDigits.indexOf(col)]][r] || '';
+            let valStr = gameMode === 'Digit' ? pattiValue : (gameMode === 'Word' ? wordValue : `<span class="both-pat">${pattiValue}</span><hr class="both-split"><span class="both-wrd">${wordValue}</span>`);
+            html += `<td class="patti-cell" data-column="${col}" data-patti="${pattiValue}" data-word="${wordValue}" data-type="Patti" onclick="selectPattiCell(this)">${valStr}</td>`;
+        });
+        html += `</tr>`;
+    }
+    wrapper.innerHTML = html + `</tbody></table>`;
+}
+
+// গ্রিড সিলেক্টেড আইটেম ফিল্ড ট্র্যাকিং
+function selectPattiCell(cellElement) {
+    document.querySelectorAll('.patti-cell').forEach(c => {
+        c.classList.remove('selected', 'overlimit-red');
+    });
+    cellElement.classList.add('selected');
+    
+    const type = cellElement.getAttribute('data-type');
+    const col = cellElement.getAttribute('data-column');
+    const displayBox = document.getElementById('selectedPattiDisplay') || document.querySelector('.selected-items-box');
+
+    if (!displayBox) return;
+
+    if (type === 'Single') {
+        const val = cellElement.getAttribute('data-val');
+        displayBox.innerHTML = `<span style="color:#ffcc00; font-weight:bold;">সিঙ্গেল ঘর: [ ${val} ] (কলাম ${col})</span>`;
+    } else {
+        const pat = cellElement.getAttribute('data-patti');
+        const wrd = cellElement.getAttribute('data-word');
+        displayBox.innerHTML = `<span style="color:#00ffcc; font-weight:bold;">প্রার্থী পাত্তি: [ ${pat} ] | ওয়ার্ড: [ ${wrd} ] (কলাম ${col})</span>`;
+    }
+}
+
+// ৪MD গিটহাব পেজেস রিডাইরেক্ট ও লগআউট ফিক্স
+function secureLogoutRouter() {
+    const logoutBtn = document.getElementById('btnLogout') || document.querySelector('.logout-item, [href*="logout"]');
+    if (logoutBtn) {
+        logoutBtn.removeAttribute('href'); 
+        logoutBtn.style.cursor = "pointer";
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log("Secure Logout Executing... #2200");
+            
+            // GitHub Pages 404 এড়াতে রিলেটিভ পাথ ফিক্স
+            let currentPath = window.location.pathname;
+            let repoName = currentPath.split('/')[1]; 
+            
+            if (window.location.hostname.includes('github.io')) {
+                window.location.href = window.location.origin + '/' + repoName + '/login.html';
+            } else {
+                window.location.href = '/login.html';
+            }
+        });
+    }
+}
+
+// ফায়ারবেস রিয়েলটাইম লিসেনার মক (লাইভ ডেটা স্ট্রিমিং গেটওয়ে)
+function simulateFirebaseLiveResult() {
+    setTimeout(() => {
+        updateRealTimeResultUI({
+            digit: "4",
+            patti: "400",
+            word: "D",
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        });
+    }, 3000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    generateGameTable('Both');
+    secureLogoutRouter();
+    simulateFirebaseLiveResult();
+    
+    // ভিউ কন্ট্রোল বাটন লিসেনার
+    document.querySelectorAll('.view-by-btn, [data-mode]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const mode = this.getAttribute('data-mode') || this.innerText.trim();
+            if(['Both', 'Digit', 'Word'].includes(mode)) generateGameTable(mode);
+        });
+    });
+});
 // লাইভ রেজাল্ট ও স্টেট হোল্ডার
 window.LiveGameState = {
     currentResult: {
