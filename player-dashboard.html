@@ -1,7 +1,7 @@
 <!-- ==========================================================================
      🔑 PROJECT: A-TO-Z BOMBAY PLAY ZONE (A-TO-Z-PATTI)
      📁 FILE: player-dashboard.html
-     📌 VERSION: v3.1.0 [LOG #2200 MASTER CONTROL]
+     📌 VERSION: v3.1.0 [LOG #2200 MASTER CONTROL - FIXED]
      ========================================================================== -->
 <!DOCTYPE html>
 <html lang="bn" dir="ltr">
@@ -29,8 +29,9 @@
             -webkit-user-select: none;
             -ms-user-select: none;
         }
-
-      <body>
+    </style> <!-- 🛠️ এখানে </style> ট্যাগটি বন্ধ করা হলো, যা আগে মিসিং ছিল -->
+</head>
+<body>
 
     <!-- ১. লেফট সাইডবার মেনু -->
     <div class="sidebar">
@@ -252,7 +253,7 @@
                 });
             }
 
-            // প্রথমবার পেজ লোডের সময় বোথ (Both) মোড ম্যাট্রিক্স অটো-ট্রিগার
+            // প্রথমবার পেজ লোডের সময় বোথ (Both) মোড ম্যাট্রিক্স অটো-ট্রিগার
             setTimeout(() => {
                 const targetEngine = window.A2Z_Engine || window.PlayerEngine;
                 if (targetEngine && typeof targetEngine.generateTable === 'function') {
