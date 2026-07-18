@@ -1,9 +1,9 @@
 // ==========================================================================
-// ATOZ BOMBAY - FIREBASE CONFIGURATION & SECURITY GATE (v5.6 - COMPAT MODE)
+// ATOZ BOMBAY - FIREBASE CONFIGURATION & SECURITY GATE (v6.0 - MODULE MODE)
 // ==========================================================================
 
-// ফায়ারবেস কনফিগারেশন অবজেক্ট (অপরিবর্তিত)
-export const firebaseConfig={
+// ফায়ারবেস কনফিগারেশন অবজেক্ট (৪১৯ নম্বর লাইনের এরর ফিক্সড)
+export const firebaseConfig = {
   apiKey: "AIzaSyB0HO_fnRt3FMjykq7Lo_Z0sAYy3kee2W4",
   authDomain: "a-toz-patti.firebaseapp.com",
   databaseURL: "https://a-toz-patti-default-rtdb.firebaseio.com",
@@ -14,7 +14,7 @@ export const firebaseConfig={
   measurementId: "G-8ENRFZRWLP"
 };
 
-// সিকিউরিটি গেটওয়ে: অনুমোদিত ডোমেন চেক
+// সিকিউরিটি গেটওয়ে: অনুমোদিত ডোমেন চেক (রাইট ক্লিক ও ইন্সপেক্ট ব্লক ইন্টিগ্রেশন রেডি)
 const allowedDomains = ["snexis.github.io", "localhost", "127.0.0.1"];
 const currentHostname = window.location.hostname;
 
@@ -27,46 +27,62 @@ if (!allowedDomains.includes(currentHostname)) {
       </div>`;
   });
   throw new Error("Security Alert: Unauthorized domain access blocked.");
-} else {
-  // ডোমেন ঠিক থাকলে ফায়ারবেস অ্যাপ ইনিশিয়ালাইজ হবে (Compat Version Syntax)
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  
-  // মেন্টর ফিক্স: উইন্ডো অবজেক্ট এবং গ্লোবাল অবজেক্ট নিশ্চিত করা (সার্ভার এরর ফিক্স)
-  window.auth = firebase.auth();
-  window.db = firebase.database();
-  
-  // লাইভ সিঙ্ক ফাংশন চালু
-  initFirebaseLiveSync();
 }
 
-/**
- * ফায়ারবেস রিয়েলটাইম ডেটাবেজ থেকে লাইভ সেটিংস সিঙ্ক করার ফাংশন
- */
-function initFirebaseLiveSync() {
-  // মেন্টর ফিক্স: যদি কোনো কারণে window.db লোড হতে দেরি হয়, সরাসরি ফায়ারবেস অবজেক্ট ব্যাকআপ হিসেবে কাজ করবে
-  if (!window.db) {
-    window.db = firebase.database();
+// গ্লোবাল স্টেট এবং লাইভ সেটিংস কন্টেইনার (মাস্টার কোর মেমোরি)
+window.GameGlobals = {
+  winPercentage: 90,        // ডিফল্ট উইনিং পার্সেন্টেজ (অ্যাডমিন সিঙ্ক হবে)
+  playerCommissionRate: 5,  // ডিফল্ট সেল কমিশন % (অ্যাডমিন সিঙ্ক হবে)
+  printAllowedByAdmin: false,
+  currentDraw: {
+    drawId: "0000",
+    drawTime: "00:00",
+    nextDraw: "00:00"
   }
+};
 
-  const settingsRef = window.db.ref("system_settings");
+/**
+ * ড্যাশবোর্ড স্ক্রিপ্ট থেকে কল করার জন্য মডিউল ফ্রেন্ডলি লাইভ সিঙ্ক গেটওয়ে
+ * @param {Object} db - ফায়ারবেস রিয়েলটাইম ডাটাবেস ইন্সট্যান্স
+ * @param {Function} ref - ফায়ারবেস ref ফাংশন
+ * @param {Function} onValue - ফায়ারবেস onValue ফাংশন
+ */
+export function initFirebaseLiveSync(db, ref, onValue) {
+  const settingsRef = ref(db, "system_settings");
 
-  // ডাটাবেজে কোনো চেঞ্জ হলেই লাইভ রিড হবে
-  settingsRef.on("value", (snapshot) => {
+  onValue(settingsRef, (snapshot) => {
     const data = snapshot.val();
     if (!data) return;
 
-    // ১. গেম মোড আপডেট (Digit / Word / Both)
-    if (data.gameMode && typeof generateGameTable === "function") {
-      console.log(`[Firebase v5.6] Game Mode Synced: ${data.gameMode}`);
-      generateGameTable(data.gameMode);
-    }
+    console.log("[#2200-MASTER-CORE] Live Settings Synced:", data);
+
+    // ১. অ্যাডমিন কন্ট্রোলড উইনিং পার্সেন্টেজ ও কমিশন সিঙ্ক
+    if (data.winPercentage !== undefined) window.GameGlobals.winPercentage = data.winPercentage;
+    if (data.playerCommissionRate !== undefined) window.GameGlobals.playerCommissionRate = data.playerCommissionRate;
 
     // ২. থার্মাল প্রিন্ট পারমিশন আপডেট
     if (data.printAllowedByAdmin !== undefined) {
-      window.printAllowedByAdmin = data.printAllowedByAdmin;
-      console.log(`[Firebase v5.6] Print Permission: ${window.printAllowedByAdmin}`);
+      window.GameGlobals.printAllowedByAdmin = data.printAllowedByAdmin;
+    }
+
+    // ৩. লাইভ ড্র স্ট্যাটাস ও টাইমিং আপডেট
+    if (data.currentDraw) {
+      window.GameGlobals.currentDraw = data.currentDraw;
+      
+      // ড্যাশবোর্ডের UI টেক্সট আপডেট (যদি এলিমেন্টগুলো উপস্থিত থাকে)
+      const txtDrawId = document.getElementById("txtDrawId");
+      const txtDrawTime = document.getElementById("txtDrawTime");
+      const txtNextDraw = document.getElementById("txtNextDraw");
+      
+      if (txtDrawId) txtDrawId.innerText = `Draw ID: ${data.currentDraw.drawId}`;
+      if (txtDrawTime) txtDrawTime.innerText = `Draw Time: ${data.currentDraw.drawTime}`;
+      if (txtNextDraw) txtNextDraw.innerText = `Next Draw: ${data.currentDraw.nextDraw}`;
+    }
+
+    // ৪. গেম মোড ফিল্টারিং আপডেট (Single/Jora/Triple)
+    if (data.gameMode && typeof window.changeMode === "function") {
+      const activeBtn = document.querySelector(`.board-controls button[data-mode="${data.gameMode}"]`);
+      window.changeMode(data.gameMode, activeBtn || null);
     }
   });
 }
