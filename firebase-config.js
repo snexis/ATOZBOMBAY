@@ -1,6 +1,8 @@
-// ==========================================================================
-// ATOZ BOMBAY - FIREBASE CONFIGURATION & SECURITY GATE (v6.0 - MODULE MODE)
-// ==========================================================================
+/* ==========================================================================
+   🔑 PROJECT: A-TO-Z BOMBAY PLAY ZONE (A-TO-Z-PATTI)
+   📁 FILE: firebase-config.js
+   📌 VERSION: v6.1.0 [LOG #2200 MASTER SECURITY & DATA SYNC]
+   ========================================================================== */
 
 // ফায়ারবেস কনফিগারেশন অবজেক্ট (৪১৯ নম্বর লাইনের এরর ফিক্সড)
 export const firebaseConfig = {
@@ -21,7 +23,7 @@ const currentHostname = window.location.hostname;
 if (!allowedDomains.includes(currentHostname)) {
   document.addEventListener("DOMContentLoaded", () => {
     document.body.innerHTML = `
-      <div style="color:#ff0055; text-align:center; margin-top:20vh; font-family:sans-serif; text-shadow: 0 0 10px rgba(255,0,85,0.5);">
+      <div style="background:#020617; color:#ff0055; text-align:center; padding-top:20vh; height:100vh; font-family:sans-serif; text-shadow: 0 0 10px rgba(255,0,85,0.5); margin:0;">
         <h1 style="font-size: 3rem; margin-bottom: 10px;">🔴 Access Denied!</h1>
         <p style="font-size: 1.2rem; color: #ccc;">Security Alert: Unauthorized domain detected. System Locked.</p>
       </div>`;
@@ -32,7 +34,7 @@ if (!allowedDomains.includes(currentHostname)) {
 // গ্লোবাল স্টেট এবং লাইভ সেটিংস কন্টেইনার (মাস্টার কোর মেমোরি)
 window.GameGlobals = {
   winPercentage: 90,        // ডিফল্ট উইনিং পার্সেন্টেজ (অ্যাডমিন সিঙ্ক হবে)
-  playerCommissionRate: 5,  // ডিফল্ট সেল কমিশন % (অ্যাডমিন সিঙ্ক হবে)
+  playerCommissionRate: 5,  // #2200 সাইডবার মডিউলে ব্যবহারের জন্য কমিশন রেট
   printAllowedByAdmin: false,
   currentDraw: {
     drawId: "0000",
@@ -58,18 +60,33 @@ export function initFirebaseLiveSync(db, ref, onValue) {
 
     // ১. অ্যাডমিন কন্ট্রোলড উইনিং পার্সেন্টেজ ও কমিশন সিঙ্ক
     if (data.winPercentage !== undefined) window.GameGlobals.winPercentage = data.winPercentage;
-    if (data.playerCommissionRate !== undefined) window.GameGlobals.playerCommissionRate = data.playerCommissionRate;
-
-    // ২. থার্মাল প্রিন্ট পারমিশন আপডেট
-    if (data.printAllowedByAdmin !== undefined) {
-      window.GameGlobals.printAllowedByAdmin = data.printAllowedByAdmin;
+    
+    // #2200 আপডেট: কমিশন হেডার থেকে বাদ, কিন্তু ব্যাকএন্ড মেমোরিতে সিঙ্ক থাকবে সাইডবার প্যানেলের জন্য
+    if (data.playerCommissionRate !== undefined) {
+      window.GameGlobals.playerCommissionRate = data.playerCommissionRate;
     }
 
-    // ৩. লাইভ ড্র স্ট্যাটাস ও টাইমিং আপডেট
+    // ২. থার্মাল প্রিন্ট পারমিশন এবং UI বাটন অ্যাকশন সিঙ্ক
+    if (data.printAllowedByAdmin !== undefined) {
+      window.GameGlobals.printAllowedByAdmin = data.printAllowedByAdmin;
+      const printBtn = document.getElementById("btnInstantPrint");
+      if (printBtn) {
+        if (data.printAllowedByAdmin) {
+          printBtn.removeAttribute("disabled");
+          printBtn.style.opacity = "1";
+          printBtn.style.cursor = "pointer";
+        } else {
+          printBtn.setAttribute("disabled", "true");
+          printBtn.style.opacity = "0.4";
+          printBtn.style.cursor = "not-allowed";
+        }
+      }
+    }
+
+    // ৩. লাইভ ড্র স্ট্যাটাস ও সাইডবার টাইমিং আপডেট
     if (data.currentDraw) {
       window.GameGlobals.currentDraw = data.currentDraw;
       
-      // ড্যাশবোর্ডের UI টেক্সট আপডেট (যদি এলিমেন্টগুলো উপস্থিত থাকে)
       const txtDrawId = document.getElementById("txtDrawId");
       const txtDrawTime = document.getElementById("txtDrawTime");
       const txtNextDraw = document.getElementById("txtNextDraw");
@@ -79,10 +96,19 @@ export function initFirebaseLiveSync(db, ref, onValue) {
       if (txtNextDraw) txtNextDraw.innerText = `Next Draw: ${data.currentDraw.nextDraw}`;
     }
 
-    // ৪. গেম মোড ফিল্টারিং আপডেট (Single/Jora/Triple)
-    if (data.gameMode && typeof window.changeMode === "function") {
+    // ৪. অ্যাডমিন প্যানেল থেকে পাঠানো গেম মোড অনুযায়ী ভিউ অটো-ফিল্টার আপডেট (Both, Word, Digit)
+    if (data.gameMode) {
       const activeBtn = document.querySelector(`.board-controls button[data-mode="${data.gameMode}"]`);
-      window.changeMode(data.gameMode, activeBtn || null);
+      if (activeBtn && typeof window.changeMode === "function") {
+        window.changeMode(data.gameMode, activeBtn);
+      } else if (window.PlayerEngine && typeof window.PlayerEngine.generateTable === "function") {
+        // যদি ডিরেক্ট ইঞ্জিন এক্সপোজড থাকে
+        window.PlayerEngine.generateTable(data.gameMode);
+        document.querySelectorAll('.board-controls .btn-ctrl').forEach(b => {
+          if(b.getAttribute('data-mode') === data.gameMode) b.classList.add('active');
+          else b.classList.remove('active');
+        });
+      }
     }
   });
 }
