@@ -217,3 +217,9 @@ window.PlayerEngine = {
     generateTable: generateGameTable,
     print: printThermalReceipt
 };
+// বাটন ক্লিক ইভেন্ট ডেলিগেশন (সরাসরি প্যানেলের জন্য)
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.board-controls .btn-ctrl')) {
+        changeMode(e.target.innerText, e.target);
+    }
+});
