@@ -1,17 +1,18 @@
 /* ==========================================================================
-   ATOZ BOMBAY - CORE GAME ENGINE (v7.1.2.8 Lite - PLAYER EDITION)
-   ==========================================================================
-   [CORE FEATURES INSIDE THIS FILE]:
-   1. 3 DYNAMIC GAME MODES: Both, Digit, and Word Mode support with exact matrix.
-   2. 220 PATTI & WORD DATABASE: Fully restored and multi-mapped architecture.
-   3. RESPONSIVE VYPORT INTERFACES: Single Row Header + 22 Cyber Rows.
-   4. INTUITIVE BUDGET WARNINGS: Patti max 5.0 PTS, Single max 1000.0 PTS limits.
+   ATOZ BOMBAY - CORE GAME ENGINE (v7.2.0 Master - INTEGRATED EDITION)
    ========================================================================== */
 
 const EngineConfig = {
-    version: "7.1.2.8 Lite",
+    version: "7.2.0 Master",
     rows: 22,
     cols: 10
+};
+
+// গ্লোবাল কনফিগারেশন ও অ্যাডমিন রেশিও গেটওয়ে
+window.GameGlobals = {
+    playerCommissionRate: 5.0, // ৫% ডাইনামিক সেলস কমিশন
+    winningRatioSingle: 9.0,   // সিঙ্গেলে ৯ গুণ রিটার্ন
+    winningRatioPatti: 90.0    // পাত্তিতে ৯০ গুণ রিটার্ন
 };
 
 const PATTI_DATA = {
@@ -60,7 +61,7 @@ let selectedPatti = null;
 let selectedWord = null;
 let selectedColumn = null;
 let selectedType = null; 
-let gameMode = 'Both';   
+let gameMode = 'Both';    
 
 // টেবিল জেনারেশন
 function generateGameTable(mode = 'Both') {
@@ -115,7 +116,7 @@ function generateGameTable(mode = 'Both') {
             } else if (gameMode === 'Word') {
                 displayValue = wordValue;
             } else {
-                displayValue = `<span class="both-pat">${pattiValue}</span><hr class="both-split"><span class="both-wrd">${wordValue}</span>`;
+                displayValue = `<span class="both-pat">${pattiValue}</span><hr style="border:0; border-top:1px dashed rgba(255,255,255,0.15); margin:4px 0;"><span class="both-wrd">${wordValue}</span>`;
             }
 
             html += `<td class="patti-cell" data-column="${col}" data-patti="${pattiValue}" data-word="${wordValue}" data-type="Patti" onclick="selectPattiCell(this)">${displayValue}</td>`;
@@ -129,12 +130,11 @@ function generateGameTable(mode = 'Both') {
 
 // ক্লিক হ্যান্ডলার
 function selectPattiCell(cellElement) {
-    const previouslySelected = document.querySelector('.patti-cell.selected');
-    if (previouslySelected) {
-        previouslySelected.classList.remove('selected');
-    }
+    document.querySelectorAll('.patti-cell').forEach(c => {
+        c.classList.remove('selected');
+        c.classList.remove('overlimit-red');
+    });
 
-    cellElement.classList.remove('overlimit-red');
     cellElement.classList.add('selected');
 
     selectedType = cellElement.getAttribute('data-type');
@@ -151,16 +151,16 @@ function selectPattiCell(cellElement) {
     const displayElement = document.getElementById('selectedPattiDisplay');
     if (displayElement) {
         if (selectedType === 'Single') {
-            displayElement.innerHTML = `<span class="badge-single">সিঙ্গেল ঘর: [ ${selectedPatti} ] (কলাম ${selectedColumn})</span>`;
+            displayElement.innerHTML = `সিঙ্গেল ঘর: [ ${selectedPatti} ]<br>Est. Win: ${window.GameGlobals.winningRatioSingle}x`;
         } else {
-            displayElement.innerHTML = `<span class="badge-patti">পাত্তি: [ ${selectedPatti} ] | ওয়ার্ড: [ ${selectedWord} ] (কলাম ${selectedColumn})</span>`;
+            displayElement.innerHTML = `পাত্তি: [ ${selectedPatti} ]<br>ওয়ার্ড: [ ${selectedWord} ]<br>Est. Win: ${window.GameGlobals.winningRatioPatti}x`;
         }
     }
 
     runLimitCheck();
 }
 
-// লিমিট চেকার
+// লিমিট চেকার (ম্যাক্স ৫ PTS পাত্তি এবং ১০০০ PTS সিঙ্গেল ফিল্ড)
 function runLimitCheck() {
     const betInput = document.getElementById('betAmountInput');
     const activeCell = document.querySelector('.patti-cell.selected') || document.querySelector('.patti-cell.overlimit-red');
@@ -187,29 +187,87 @@ function runLimitCheck() {
     }
 }
 
-// থার্মাল প্রিন্টার
+// থার্মাল ব্লুটুথ প্রিন্টার রিসিট জেনারেটর
 function printThermalReceipt(receiptData) {
-    if (!window.printAllowedByAdmin) {
-        console.log("প্রিন্ট অপশন অ্যাডমিন দ্বারা অফ করা রয়েছে।");
-        return;
-    }
-    const receiptText = `\n--------------------------------\n          ATOZ BOMBAY           \n--------------------------------\nতারিখ: ${receiptData.date}\nসময়: ${receiptData.time}\nপ্লেয়ার আইডি: ${receiptData.playerId}\n--------------------------------\nটাইপ: ${receiptData.type}\nঘর: ${receiptData.target}\nপয়েন্ট: ${receiptData.points} PTS\n--------------------------------\n     ধন্যবাদ এবং শুভকামনা!     \n--------------------------------\n\n\n`;
-    if (navigator.bluetooth) {
-        console.log("Bluetooth Thermal printing initiating...", receiptText);
-    } else {
-        const printWindow = window.open('', '_blank', 'width=300,height=400');
-        printWindow.document.write('<pre>' + receiptText + '</pre>');
-        printWindow.document.close();
-        printWindow.print();
-        printWindow.close();
-    }
+    const receiptText = `
+--------------------------------
+          ATOZ BOMBAY           
+--------------------------------
+তারিখ: ${receiptData.date || new Date().toLocaleDateString()}
+সময়: ${receiptData.time || new Date().toLocaleTimeString()}
+প্লেয়ার আইডি: ${receiptData.playerId || 'PLAYER'}
+--------------------------------
+টাইপ: ${receiptData.type}
+টার্গেট ঘর: ${receiptData.target}
+বেট অ্যামাউন্ট: ৳${receiptData.points}
+সম্ভাব্য রিটার্ন: ৳${receiptData.estWin}
+--------------------------------
+       ধন্যবাদ এবং শুভকামনা!     
+--------------------------------
+\n\n`;
+
+    const printWindow = window.open('', '_blank', 'width=300,height=400');
+    printWindow.document.write('<pre>' + receiptText + '</pre>');
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.close();
 }
 
+// ফায়ারবেস সাবমিশন ইভেন্ট লিঙ্কার
 document.addEventListener("DOMContentLoaded", () => {
     generateGameTable('Both');
+    
     const betInput = document.getElementById('betAmountInput');
     if (betInput) {
         betInput.addEventListener('input', runLimitCheck);
+    }
+
+    const submitBtn = document.getElementById('btnSubmitBet');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            const betInputEl = document.getElementById('betAmountInput');
+            const amt = parseFloat(betInputEl ? betInputEl.value : 0);
+
+            if (!selectedPatti || amt <= 0) {
+                alert("অনুগ্রহ করে একটি ঘর সিলেক্ট করুন এবং সঠিক অ্যামাউন্ট বসান!");
+                return;
+            }
+
+            // লিমিট ক্রস প্রটেকশন চেক
+            if (selectedType === 'Patti' && amt > 5.0) {
+                alert("ত্রুটি: পাত্তিতে সর্বোচ্চ ৫ PTS পর্যন্ত বেট দেওয়া সম্ভব!");
+                return;
+            }
+            if (selectedType === 'Single' && amt > 1000.0) {
+                alert("ত্রুটি: সিঙ্গেলে সর্বোচ্চ ১০০০ PTS পর্যন্ত বেট দেওয়া সম্ভব!");
+                return;
+            }
+
+            const estWinAmount = selectedType === 'Single' ? amt * window.GameGlobals.winningRatioSingle : amt * window.GameGlobals.winningRatioPatti;
+
+            const betData = {
+                type: selectedType,
+                target: selectedPatti,
+                word: selectedWord,
+                points: amt,
+                estWin: estWinAmount,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString()
+            };
+
+            // লোকাল ডেমো রিসিট প্রিন্ট কল
+            printThermalReceipt(betData);
+            alert("বেট সফলভাবে সাবমিট ও রিসিট জেনারেট হয়েছে!");
+            if (typeof resetSelection === "function") resetSelection();
+        });
+    }
+
+    // ইনস্ট্যান্ট প্রিন্ট বাটন ডেলিগেশন
+    const instantPrintBtn = document.getElementById('btnInstantPrint');
+    if (instantPrintBtn) {
+        instantPrintBtn.addEventListener('click', () => {
+            alert("কোনো অ্যাক্টিভ টিকিট স্লট পাওয়া যায়নি!");
+        });
     }
 });
 
@@ -217,9 +275,3 @@ window.PlayerEngine = {
     generateTable: generateGameTable,
     print: printThermalReceipt
 };
-// বাটন ক্লিক ইভেন্ট ডেলিগেশন (সরাসরি প্যানেলের জন্য)
-document.addEventListener('click', function(e) {
-    if (e.target.matches('.board-controls .btn-ctrl')) {
-        changeMode(e.target.innerText, e.target);
-    }
-});
