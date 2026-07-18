@@ -3,7 +3,7 @@
 // ==========================================================================
 
 // ফায়ারবেস কনফিগারেশন অবজেক্ট (অপরিবর্তিত)
-const firebaseConfig = {
+export const firebaseConfig{
   apiKey: "AIzaSyB0HO_fnRt3FMjykq7Lo_Z0sAYy3kee2W4",
   authDomain: "a-toz-patti.firebaseapp.com",
   databaseURL: "https://a-toz-patti-default-rtdb.firebaseio.com",
