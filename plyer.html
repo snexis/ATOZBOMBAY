@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-TO-Z Bombay | Player Dashboard</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <!-- ড্যাশবোর্ড হেডার -->
+    <header class="dashboard-header">
+        <h1 class="dashboard-title">ATOZ Bombay - Live Board</h1>
+        <button id="logoutBtn" class="btn btn-danger" style="width: auto; padding: 10px 20px;">Logout</button>
+    </header>
+
+    <!-- মেইন কন্টেন্ট এরিয়া -->
+    <main class="main-content">
+        <h2 style="text-align: center; color: #fff; margin-bottom: 30px;">Live Patti Results</h2>
+
+        <!-- ২২০ পাত্তির গ্রিড -->
+        <div id="pattiMatrix" class="matrix-grid">
+            <!-- ডাটাবেস থেকে লাইভ পাত্তি এখানে শো করবে -->
+        </div>
+    </main>
+
+    <!-- প্লেয়ার ভিউ লজিক ও সিকিউরিটি -->
+    <script type="module">
+        import { protectPlayerPage, handlePlayerLogout } from "./auth.js";
+        import { db } from "./firebase-config.js";
+        import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // ১. প্লেয়ার পেজ সিকিউরিটি
+        protectPlayerPage();
+
+        // লগআউট
+        document.getElementById('logoutBtn').addEventListener('click', handlePlayerLogout);
+
+        // ২. লাইভ ডাটা রিড করা (শুধু দেখার জন্য, এডিট করার অপশন নেই)
+        const pattiMatrixContainer = document.getElementById('pattiMatrix');
+        const gameDataRef = ref(db, 'pattiData');
+
+        onValue(gameDataRef, (snapshot) => {
+            pattiMatrixContainer.innerHTML = '';
+            const data = snapshot.val() || {};
+
+            for (let i = 100; i <= 999; i++) {
+                const digits = i.toString().split('').map(Number);
+                if (digits[0] <= digits[1] && digits[1] <= digits[2]) {
+                    const pattiNum = i.toString();
+                    const pattiValue = data[pattiNum] !== undefined ? data[pattiNum] : "-";
+
+                    const card = document.createElement('div');
+                    card.className = 'patti-card';
+                    card.innerHTML = `
+                        <span class="patti-number">${pattiNum}</span>
+                        <span class="patti-value">${pattiValue}</span>
+                    `;
+                    pattiMatrixContainer.appendChild(card);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
