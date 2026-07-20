@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-TO-Z Bombay | Player Login</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Player Zone</h2>
+        <form id="playerLoginForm">
+            <div class="input-group">
+                <label for="playerEmail">Player ID (Email)</label>
+                <input type="email" id="playerEmail" required placeholder="Enter your unique ID">
+            </div>
+            
+            <div class="input-group">
+                <label for="playerPassword">Password</label>
+                <input type="password" id="playerPassword" required placeholder="Enter password">
+            </div>
+            
+            <button type="submit" class="btn">Enter Game</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { handlePlayerLogin } from "./auth.js";
+
+        document.getElementById('playerLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('playerEmail').value;
+            const pass = document.getElementById('playerPassword').value;
+            handlePlayerLogin(email, pass);
+        });
+    </script>
+</body>
+</html>
