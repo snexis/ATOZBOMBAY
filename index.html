@@ -12,8 +12,10 @@
         <h2>Player Zone</h2>
         <form id="playerLoginForm">
             <div class="input-group">
-                <label for="playerEmail">Player ID (Email)</label>
-                <input type="email" id="playerEmail" required placeholder="Enter your unique ID">
+                <!-- এখানে লেবেল বদলে শুধু Player ID করে দেওয়া হয়েছে -->
+                <label for="playerEmail">Player ID</label>
+                <!-- type="text" করা হয়েছে যাতে @ বা মেইল আইডি না লিখতে হয় -->
+                <input type="text" id="playerEmail" required placeholder="Enter your unique ID (e.g., a01)">
             </div>
             
             <div class="input-group">
@@ -30,9 +32,14 @@
 
         document.getElementById('playerLoginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('playerEmail').value;
+            const inputId = document.getElementById('playerEmail').value.trim();
             const pass = document.getElementById('playerPassword').value;
-            handlePlayerLogin(email, pass);
+            
+            // প্লেয়ারের দেওয়া ছোট আইডির সাথে ব্যাকগ্রাউন্ডে অটোমেটিক মেইল জুড়ে দেওয়া হচ্ছে
+            const finalEmail = inputId.toLowerCase() + "@atoz.com";
+            
+            // এবার ফায়ারবেসের মেইন ফাংশনে এই মেইলটি পাঠানো হচ্ছে
+            handlePlayerLogin(finalEmail, pass);
         });
     </script>
 </body>
