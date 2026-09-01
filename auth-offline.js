@@ -1,26 +1,20 @@
 export function handlePlayerLogin(playerId, password) {
-    const errorBox = document.getElementById('errorMessage');
+    // লোকাল মেমরি থেকে ইউজার ডাটা আনা
     const users = JSON.parse(localStorage.getItem('game_users') || '{}');
 
-    // पहले पुराने एरर मैसेज को छुपाएं
-    errorBox.style.display = 'none';
-    errorBox.innerText = '';
-
+    // প্লেয়ার আইডি মেমরিতে আছে কিনা চেক করা
     if (!users[playerId]) {
-        // ID ना मिलने पर एरर दिखाएं
-        errorBox.innerText = "❌ प्लेटफ़ॉर्म पर यह आईडी मौजूद नहीं है!";
-        errorBox.style.display = 'block';
+        alert("❌ এই আইডিটি পাওয়া যায়নি! আগে অ্যাডমিন প্যানেল থেকে আইডি রেজিস্টার করুন।");
         return;
     }
 
+    // পাসওয়ার্ড চেক করা
     if (users[playerId].password && users[playerId].password !== password) {
-        // पासवर्ड गलत होने पर एरर दिखाएं
-        errorBox.innerText = "❌ पासवर्ड गलत है!";
-        errorBox.style.display = 'block';
+        alert("❌ ভুল পাসওয়ার্ড!");
         return;
     }
 
-    // लॉगिन सफल होने पर
+    // সঠিক হলে সেশন সেভ করে ড্যাশবোর্ডে পাঠাবে
     sessionStorage.setItem('loggedInUser', playerId);
     window.location.href = "player.html";
 }
