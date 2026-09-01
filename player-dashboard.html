@@ -1,78 +1,30 @@
 <script>
-        // ওয়ার্ড কোড ডুপ্লিকেট লিস্ট
-        const WORD_LIST = ["AXZ", "BKP", "LMO", "RST", "TUV", "WXY", "NOP", "ABC", "EFG", "HIJ", "KLM", "QRS", "UVW", "XYZ", "DEF", "GHI", "JKL", "MNO", "PQR", "STU", "VWX", "ZAB", "BCA", "CAB", "DAB"];
-
-        // A, B, C, D নম্বর রেঞ্জ কনফিগারেশন
-        const RANGE_CONFIG = {
-            'A': { start: 1, end: 25 },
-            'B': { start: 26, end: 50 },
-            'C': { start: 51, end: 75 },
-            'D': { start: 76, end: 100 }
-        };
+        const mockData = [
+            {num: "100", word: "AXZ"}, {num: "200", word: "BCA"}, {num: "300", word: "CAG"},
+            {num: "400", word: "EAK"}, {num: "500", word: "GAL"}, {num: "600", word: "JAN"},
+            {num: "700", word: "LAP"}, {num: "800", word: "NAR"}, {num: "900", word: "RAS"}
+        ];
 
         let selectedPattis = new Set();
         let selectedCoinValue = 10;
         let activeViewMode = 'Both';
-        let activeRange = 'A';
-        let currentUser = null;
 
-        // ১. প্লেয়ার অ্যাকাউন্ট ও ব্যালেন্স চেক এবং লোড
-        function loadPlayerProfile() {
-            const loggedInUser = sessionStorage.getItem('loggedInUser');
-            if (!loggedInUser) {
-                window.location.href = "index.html";
-                return;
-            }
-
-            document.getElementById('lblPlayerId').innerText = `Profile: ${loggedInUser}`;
-
-            let users = JSON.parse(localStorage.getItem('game_users') || '{}');
-            if (!users[loggedInUser]) {
-                users[loggedInUser] = { balance: 5000, winBalance: 0 };
-                localStorage.setItem('game_users', JSON.stringify(users));
-            }
-            
-            currentUser = loggedInUser;
-            updateBalanceUI(users[loggedInUser].balance, users[loggedInUser].winBalance || 0);
-        }
-
-        // ব্যালেন্স ইন্টারফেস আপডেট
-        function updateBalanceUI(balance, winBalance = 0) {
-            document.getElementById('txtPlayPoints').innerText = `৳${Number(balance).toLocaleString()}`;
-            document.getElementById('txtWinPoints').innerText = `৳${Number(winBalance).toLocaleString()}`;
-        }
-
-        // ২. ডাইনামিক টেবিল জেনারেটর (নম্বর রেঞ্জ ফিল্টারিং সহ)
         function initTable() {
             const tbody = document.getElementById('matrixBody');
             tbody.innerHTML = "";
-            selectedPattis.clear();
-            updateSelectionSummary();
-
-            const config = RANGE_CONFIG[activeRange] || RANGE_CONFIG['A'];
-            let currentNum = config.start;
-            let itemsPerRow = 5;
-            let totalItems = (config.end - config.start) + 1;
-            let rowsCount = Math.ceil(totalItems / itemsPerRow);
-
-            for (let r = 0; r < rowsCount; r++) {
+            for (let r = 0; r < 15; r++) {
                 let tr = document.createElement('tr');
-                for (let c = 0; c < itemsPerRow; c++) {
-                    if (currentNum > config.end) {
-                        let emptyTd = document.createElement('td');
-                        tr.appendChild(emptyTd);
-                        continue;
-                    }
-
+                for (let c = 0; c < 9; c++) {
                     let td = document.createElement('td');
-                    let wordItem = WORD_LIST[(currentNum - 1) % WORD_LIST.length];
-                    let displayNum = currentNum;
-                    let uniqueId = `${displayNum}-${wordItem}`;
+                    let dataIndex = (r + c) % mockData.length;
+                    let item = mockData[dataIndex];
+                    let displayNum = parseInt(item.num) + (r * 10);
+                    let uniqueId = `${displayNum}-${item.word}`;
 
                     td.innerHTML = `
                         <div class="patti-item" data-id="${uniqueId}">
                             <span class="patti-num">${displayNum}</span>
-                            <span class="patti-word">${wordItem}</span>
+                            <span class="patti-word">${item.word}</span>
                         </div>
                     `;
 
@@ -88,14 +40,12 @@
                     });
 
                     tr.appendChild(td);
-                    currentNum++;
                 }
                 tbody.appendChild(tr);
             }
             applyViewMode(activeViewMode);
         }
 
-        // ৩. ভিউ মোড পরিবর্তন (Both, Word, Digit)
         function applyViewMode(mode) {
             activeViewMode = mode;
             const nums = document.querySelectorAll('.patti-num');
@@ -109,7 +59,6 @@
             });
         }
 
-        // ৪. সিলেক্ট করা আইটেম প্রদর্শন
         function updateSelectionSummary() {
             const container = document.getElementById('selectedItemsContainer');
             if (selectedPattis.size === 0) {
@@ -117,37 +66,12 @@
                 return;
             }
             const totalBet = selectedPattis.size * selectedCoinValue;
-            container.innerHTML = `<div>Selected: <strong>${selectedPattis.size}</strong> items<br>Range: <strong>${activeRange}</strong> (${RANGE_CONFIG[activeRange].start}-${RANGE_CONFIG[activeRange].end})<br>Total Stake: <strong style="color:var(--gold-bright)">৳${totalBet}</strong></div>`;
+            container.innerHTML = `<div>Selected: <strong>${selectedPattis.size}</strong> items<br>Total Stake: <strong style="color:var(--gold-bright)">৳${totalBet}</strong></div>`;
         }
 
-        // ৫. নেভিগেশন সাইডবার ও বাটন হ্যান্ডলার
-        function setupNavigation() {
-            const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    menuItems.forEach(m => m.classList.remove('active'));
-                    this.classList.add('active');
-                    const text = this.innerText.trim();
-                    if (!text.includes("Play Board")) {
-                        alert(`📌 [${text}] সেকশনটি অফলাইন ডেমো মোডে সক্রিয় রয়েছে।`);
-                    }
-                });
-            });
-
-            // সুরক্ষিত লগআউট
-            document.querySelector('.btn-logout').addEventListener('click', function() {
-                sessionStorage.removeItem('loggedInUser');
-                window.location.href = 'index.html';
-            });
-        }
-
-        // ইভেন্ট ইনিশিয়ালাইজেশন
         document.addEventListener("DOMContentLoaded", () => {
-            loadPlayerProfile();
             initTable();
-            setupNavigation();
 
-            // View By Buttons
             document.querySelectorAll('.view-by-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.view-by-btn').forEach(b => b.classList.remove('active'));
@@ -157,17 +81,13 @@
                 });
             });
 
-            // Number Range Buttons (A: 1-25, B: 26-50, C: 51-75, D: 76-100)
             document.querySelectorAll('#numberRangeBox .btn-bet-opt').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#numberRangeBox .btn-bet-opt').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
-                    activeRange = this.getAttribute('data-range');
-                    initTable();
                 });
             });
 
-            // Bet Type Buttons
             document.querySelectorAll('#betTypeBox .btn-bet-opt').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#betTypeBox .btn-bet-opt').forEach(b => b.classList.remove('active'));
@@ -175,7 +95,6 @@
                 });
             });
 
-            // Coin Multiplier Buttons
             document.querySelectorAll('.coin-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.coin-btn').forEach(b => b.classList.remove('selected-coin'));
@@ -185,41 +104,19 @@
                 });
             });
 
-            // Reset Board Button
             document.getElementById('btnResetBoard').addEventListener('click', () => {
                 selectedPattis.clear();
                 document.querySelectorAll('.matrix-table td').forEach(cell => cell.classList.remove('selected-cell'));
                 updateSelectionSummary();
             });
 
-            // Submit Bet and Deduct Balance Button
             document.getElementById('btnSubmitBet').addEventListener('click', () => {
                 if (selectedPattis.size === 0) {
-                    alert("❌ অনুগ্রহ করে অন্তত একটি আইটেম সিলেক্ট করুন!");
+                    alert("Please select at least one item!");
                     return;
                 }
-
                 const totalAmount = selectedPattis.size * selectedCoinValue;
-                let users = JSON.parse(localStorage.getItem('game_users') || '{}');
-                let user = users[currentUser];
-
-                if (!user || user.balance < totalAmount) {
-                    alert(`❌ আপনার পর্যাপ্ত ব্যালেন্স নেই!\nপ্রয়োজন: ৳${totalAmount}\nআপনার ব্যালেন্স: ৳${user ? user.balance : 0}`);
-                    return;
-                }
-
-                // ব্যালেন্স ডিডাকশন
-                user.balance -= totalAmount;
-                users[currentUser] = user;
-                localStorage.setItem('game_users', JSON.stringify(users));
-
-                updateBalanceUI(user.balance, user.winBalance || 0);
-
-                alert(`✅ বেট সফলভাবে সম্পন্ন হয়েছে!\nরেঞ্জ: ${activeRange}\nমোট আইটেম: ${selectedPattis.size}\nমোট ব্যালেন্স থেকে কাটা হয়েছে: ৳${totalAmount}`);
-
-                selectedPattis.clear();
-                document.querySelectorAll('.matrix-table td').forEach(cell => cell.classList.remove('selected-cell'));
-                updateSelectionSummary();
+                alert(`Bet placed successfully!\nTotal Items: ${selectedPattis.size}\nTotal Amount: ৳${totalAmount}`);
             });
         });
     </script>
