@@ -21,5 +21,5 @@ export function handlePlayerLogin(playerId, password) {
 
     // সেশন সেভ করে গেম স্ক্রিনে পাঠানো
     sessionStorage.setItem('loggedInUser', playerId);
-    window.location.href = "player.html";
+window.location.href = "player-dashboard.html";
 }
