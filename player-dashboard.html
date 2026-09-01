@@ -1,534 +1,78 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A-TO-Z Patti - Premium Player Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-dark-blue: #020617;
-            --bg-sidebar: #0b132b;
-            --bg-card: #0f172a;
-            --gold-bright: #ffc107;
-            --gold-glow: rgba(255, 193, 7, 0.4);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --text-white: #ffffff;
-            --neon-accent: #00ffcc;
-        }
+<script>
+        // ওয়ার্ড কোড ডুপ্লিকেট লিস্ট
+        const WORD_LIST = ["AXZ", "BKP", "LMO", "RST", "TUV", "WXY", "NOP", "ABC", "EFG", "HIJ", "KLM", "QRS", "UVW", "XYZ", "DEF", "GHI", "JKL", "MNO", "PQR", "STU", "VWX", "ZAB", "BCA", "CAB", "DAB"];
 
-        * {
-            user-select: none;
-            -webkit-user-select: none;
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-dark-blue);
-            color: var(--text-white);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px 10px;
-            flex-shrink: 0;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .menu-item {
-            padding: 12px 15px;
-            color: #94a3b8;
-            cursor: pointer;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-        }
-
-        .menu-item i {
-            margin-right: 10px;
-            width: 20px;
-        }
-
-        .menu-item.active, .menu-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--gold-bright);
-        }
-
-        .live-draw-box {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .live-pulse {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: #ef4444;
-            border-radius: 5px;
-            margin-right: 5px;
-        }
-
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--bg-card);
-            padding: 15px 20px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .avatar {
-            width: 35px;
-            height: 35px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gold-bright);
-        }
-
-        .live-mode-status-wrapper {
-            display: flex;
-            gap: 15px;
-        }
-
-        .mode-status-item {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 6px 15px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-
-        .mode-status-item span {
-            color: var(--neon-accent);
-        }
-
-        .stats-container {
-            display: flex;
-            gap: 15px;
-        }
-
-        .stat-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255,255,255,0.02);
-            padding: 8px 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .stat-box i {
-            color: var(--gold-bright);
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        .stat-value {
-            font-size: 0.95rem;
-            font-weight: bold;
-        }
-
-        .btn-logout {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .workspace {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 20px;
-            align-items: start;
-        }
-
-        .board-section {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .board-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-ctrl {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 6px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .btn-ctrl.active, .btn-ctrl:hover {
-            background: var(--gold-bright);
-            color: black;
-            font-weight: bold;
-        }
-
-        .matrix-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-        }
-
-        .matrix-table th {
-            background-color: #1e293b;
-            color: var(--text-white);
-            padding: 10px 5px;
-            font-weight: bold;
-            border: 1px solid var(--border-color);
-            font-size: 0.9rem;
-        }
-
-        .matrix-table td {
-            border: 1px solid var(--border-color);
-            padding: 8px 4px;
-            vertical-align: top;
-            font-size: 0.85rem;
-            background: rgba(255,255,255,0.01);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .matrix-table td:hover {
-            background: rgba(255, 193, 7, 0.1);
-        }
-
-        .matrix-table td.selected-cell {
-            background: rgba(255, 193, 7, 0.3) !important;
-            border-color: var(--gold-bright);
-        }
-
-        .patti-item {
-            margin-bottom: 2px;
-            padding: 4px 2px;
-            border-radius: 4px;
-        }
-
-        .patti-num {
-            font-weight: bold;
-            display: block;
-        }
-
-        .patti-word {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            display: block;
-        }
-
-        .betting-panel {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .panel-title {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .panel-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        .btn-bet-opt {
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            border: 1px solid var(--border-color);
-            padding: 8px 4px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            text-align: center;
-        }
-
-        .btn-bet-opt.active {
-            background: rgba(255, 193, 7, 0.1);
-            color: var(--gold-bright);
-            border-color: var(--gold-bright);
-            font-weight: bold;
-        }
-
-        .coin-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-        }
-
-        .coin-btn {
-            background: #1e293b;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 8px 0;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-
-        .coin-btn.selected-coin {
-            background: var(--gold-bright);
-            color: black;
-        }
-
-        .selection-display {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 12px;
-            font-size: 0.85rem;
-            color: #94a3b8;
-            text-align: center;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-
-        .btn-submit-bet {
-            background: var(--gold-bright);
-            color: black;
-            margin-bottom: 8px;
-        }
-
-        .btn-reset {
-            background: #475569;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="sidebar">
-        <ul class="sidebar-menu">
-            <li class="menu-item active"><i class="fa-solid fa-table-cells"></i> Play Board</li>
-            <li class="menu-item"><i class="fa-solid fa-wallet"></i> Withdraw Funds</li>
-            <li class="menu-item"><i class="fa-solid fa-file-invoice"></i> Transaction Report</li>
-            <li class="menu-item"><i class="fa-solid fa-money-check-dollar"></i> Account Balance</li>
-            <li class="menu-item"><i class="fa-solid fa-history"></i> Play History</li>
-            <li class="menu-item"><i class="fa-solid fa-square-poll-vertical"></i> Results</li>
-            <li class="menu-item"><i class="fa-solid fa-gear"></i> Settings</li>
-            <li class="menu-item"><i class="fa-solid fa-circle-question"></i> Help & Support</li>
-        </ul>
-        <div class="live-draw-box">
-            <div style="font-size: 0.85rem; font-weight: bold;"><span class="live-pulse"></span> Live Draw Status</div>
-            <div id="txtDrawTime" style="font-size: 0.75rem; color: #94a3b8; margin-top:5px;">Draw Time: 01:25:30 PM</div>
-            <div id="txtDrawId" style="font-size: 0.75rem; color: #94a3b8;">Draw ID: 245678</div>
-        </div>
-    </div>
-
-    <div class="main-container">
-        <div class="topbar">
-            <div class="profile-section">
-                <div class="avatar"><i class="fa-solid fa-user"></i></div>
-                <div id="lblPlayerId" style="font-weight:bold;">Profile: Raj</div>
-            </div>
-            <div class="live-mode-status-wrapper">
-                <div class="mode-status-item">BOTH: <span id="lblLiveBoth">400:B</span></div>
-                <div class="mode-status-item">WORD: <span id="lblLiveWord">0</span></div>
-                <div class="mode-status-item">DIGIT: <span id="lblLiveDigit">4</span></div>
-            </div>
-            <div class="stats-container">
-                <div class="stat-box">
-                    <i class="fa-solid fa-wallet"></i>
-                    <div>
-                        <div class="stat-label">Play Balance</div>
-                        <div class="stat-value" id="txtPlayPoints">৳5,000</div>
-                    </div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-trophy"></i>
-                    <div>
-                        <div class="stat-label">Winning Balance</div>
-                        <div class="stat-value" id="txtWinPoints" style="color: #22c55e;">৳1,200</div>
-                    </div>
-                </div>
-            </div>
-            <button class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-        </div>
-
-        <div class="workspace">
-            <div class="board-section">
-                <div class="board-controls">
-                    <button class="btn-ctrl" style="background:#d97706;"><i class="fa-solid fa-print"></i> Print</button>
-                    <div class="control-group">
-                        <span>View By:</span>
-                        <button class="btn-ctrl view-by-btn active" data-mode="Both">Both</button>
-                        <button class="btn-ctrl view-by-btn" data-mode="Word">Word</button>
-                        <button class="btn-ctrl view-by-btn" data-mode="Digit">Digit</button>
-                    </div>
-                </div>
-
-                <div style="overflow-x: auto;">
-                    <table class="matrix-table">
-                        <thead>
-                            <tr>
-                                <th>1</th>
-                                <th>2</th>
-                                <th>3</th>
-                                <th>4</th>
-                                <th>5</th>
-                                <th>6</th>
-                                <th>7</th>
-                                <th>8</th>
-                                <th>9</th>
-                            </tr>
-                        </thead>
-                        <tbody id="matrixBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="betting-panel">
-                <div>
-                    <div class="panel-title">Number Range</div>
-                    <div class="panel-row" id="numberRangeBox">
-                        <button class="btn-bet-opt active" data-range="A">A<br><small>1-25</small></button>
-                        <button class="btn-bet-opt" data-range="B">B<br><small>26-50</small></button>
-                        <button class="btn-bet-opt" data-range="C">C<br><small>51-75</small></button>
-                        <button class="btn-bet-opt" data-range="D">D<br><small>76-100</small></button>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="panel-title">Bet Type</div>
-                    <div class="panel-row" style="grid-template-columns: repeat(3, 1fr);" id="betTypeBox">
-                        <button class="btn-bet-opt active" data-type="Single">Single</button>
-                        <button class="btn-bet-opt" data-type="Jora">Jora</button>
-                        <button class="btn-bet-opt" data-type="Triple">Triple</button>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="panel-title">Select Multiply Coin</div>
-                    <div class="coin-grid">
-                        <button class="coin-btn selected-coin" data-coin="10">৳10</button>
-                        <button class="coin-btn" data-coin="20">৳20</button>
-                        <button class="coin-btn" data-coin="50">৳50</button>
-                        <button class="coin-btn" data-coin="100">৳100</button>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="panel-title">Selected Items Matrix</div>
-                    <div class="selection-display" id="selectedItemsContainer">
-                        Your selections will appear here
-                    </div>
-                </div>
-
-                <div>
-                    <button class="btn-action btn-submit-bet" id="btnSubmitBet">Submit Bet</button>
-                    <button class="btn-action btn-reset" id="btnResetBoard">Reset All</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const mockData = [
-            {num: "100", word: "AXZ"}, {num: "200", word: "BCA"}, {num: "300", word: "CAG"},
-            {num: "400", word: "EAK"}, {num: "500", word: "GAL"}, {num: "600", word: "JAN"},
-            {num: "700", word: "LAP"}, {num: "800", word: "NAR"}, {num: "900", word: "RAS"}
-        ];
+        // A, B, C, D নম্বর রেঞ্জ কনফিগারেশন
+        const RANGE_CONFIG = {
+            'A': { start: 1, end: 25 },
+            'B': { start: 26, end: 50 },
+            'C': { start: 51, end: 75 },
+            'D': { start: 76, end: 100 }
+        };
 
         let selectedPattis = new Set();
         let selectedCoinValue = 10;
         let activeViewMode = 'Both';
+        let activeRange = 'A';
+        let currentUser = null;
 
+        // ১. প্লেয়ার অ্যাকাউন্ট ও ব্যালেন্স চেক এবং লোড
+        function loadPlayerProfile() {
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (!loggedInUser) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            document.getElementById('lblPlayerId').innerText = `Profile: ${loggedInUser}`;
+
+            let users = JSON.parse(localStorage.getItem('game_users') || '{}');
+            if (!users[loggedInUser]) {
+                users[loggedInUser] = { balance: 5000, winBalance: 0 };
+                localStorage.setItem('game_users', JSON.stringify(users));
+            }
+            
+            currentUser = loggedInUser;
+            updateBalanceUI(users[loggedInUser].balance, users[loggedInUser].winBalance || 0);
+        }
+
+        // ব্যালেন্স ইন্টারফেস আপডেট
+        function updateBalanceUI(balance, winBalance = 0) {
+            document.getElementById('txtPlayPoints').innerText = `৳${Number(balance).toLocaleString()}`;
+            document.getElementById('txtWinPoints').innerText = `৳${Number(winBalance).toLocaleString()}`;
+        }
+
+        // ২. ডাইনামিক টেবিল জেনারেটর (নম্বর রেঞ্জ ফিল্টারিং সহ)
         function initTable() {
             const tbody = document.getElementById('matrixBody');
             tbody.innerHTML = "";
-            for (let r = 0; r < 15; r++) {
+            selectedPattis.clear();
+            updateSelectionSummary();
+
+            const config = RANGE_CONFIG[activeRange] || RANGE_CONFIG['A'];
+            let currentNum = config.start;
+            let itemsPerRow = 5;
+            let totalItems = (config.end - config.start) + 1;
+            let rowsCount = Math.ceil(totalItems / itemsPerRow);
+
+            for (let r = 0; r < rowsCount; r++) {
                 let tr = document.createElement('tr');
-                for (let c = 0; c < 9; c++) {
+                for (let c = 0; c < itemsPerRow; c++) {
+                    if (currentNum > config.end) {
+                        let emptyTd = document.createElement('td');
+                        tr.appendChild(emptyTd);
+                        continue;
+                    }
+
                     let td = document.createElement('td');
-                    let dataIndex = (r + c) % mockData.length;
-                    let item = mockData[dataIndex];
-                    let displayNum = parseInt(item.num) + (r * 10);
-                    let uniqueId = `${displayNum}-${item.word}`;
+                    let wordItem = WORD_LIST[(currentNum - 1) % WORD_LIST.length];
+                    let displayNum = currentNum;
+                    let uniqueId = `${displayNum}-${wordItem}`;
 
                     td.innerHTML = `
                         <div class="patti-item" data-id="${uniqueId}">
                             <span class="patti-num">${displayNum}</span>
-                            <span class="patti-word">${item.word}</span>
+                            <span class="patti-word">${wordItem}</span>
                         </div>
                     `;
 
@@ -544,12 +88,14 @@
                     });
 
                     tr.appendChild(td);
+                    currentNum++;
                 }
                 tbody.appendChild(tr);
             }
             applyViewMode(activeViewMode);
         }
 
+        // ৩. ভিউ মোড পরিবর্তন (Both, Word, Digit)
         function applyViewMode(mode) {
             activeViewMode = mode;
             const nums = document.querySelectorAll('.patti-num');
@@ -563,6 +109,7 @@
             });
         }
 
+        // ৪. সিলেক্ট করা আইটেম প্রদর্শন
         function updateSelectionSummary() {
             const container = document.getElementById('selectedItemsContainer');
             if (selectedPattis.size === 0) {
@@ -570,12 +117,37 @@
                 return;
             }
             const totalBet = selectedPattis.size * selectedCoinValue;
-            container.innerHTML = `<div>Selected: <strong>${selectedPattis.size}</strong> items<br>Total Stake: <strong style="color:var(--gold-bright)">৳${totalBet}</strong></div>`;
+            container.innerHTML = `<div>Selected: <strong>${selectedPattis.size}</strong> items<br>Range: <strong>${activeRange}</strong> (${RANGE_CONFIG[activeRange].start}-${RANGE_CONFIG[activeRange].end})<br>Total Stake: <strong style="color:var(--gold-bright)">৳${totalBet}</strong></div>`;
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            initTable();
+        // ৫. নেভিগেশন সাইডবার ও বাটন হ্যান্ডলার
+        function setupNavigation() {
+            const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    menuItems.forEach(m => m.classList.remove('active'));
+                    this.classList.add('active');
+                    const text = this.innerText.trim();
+                    if (!text.includes("Play Board")) {
+                        alert(`📌 [${text}] সেকশনটি অফলাইন ডেমো মোডে সক্রিয় রয়েছে।`);
+                    }
+                });
+            });
 
+            // সুরক্ষিত লগআউট
+            document.querySelector('.btn-logout').addEventListener('click', function() {
+                sessionStorage.removeItem('loggedInUser');
+                window.location.href = 'index.html';
+            });
+        }
+
+        // ইভেন্ট ইনিশিয়ালাইজেশন
+        document.addEventListener("DOMContentLoaded", () => {
+            loadPlayerProfile();
+            initTable();
+            setupNavigation();
+
+            // View By Buttons
             document.querySelectorAll('.view-by-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.view-by-btn').forEach(b => b.classList.remove('active'));
@@ -585,13 +157,17 @@
                 });
             });
 
+            // Number Range Buttons (A: 1-25, B: 26-50, C: 51-75, D: 76-100)
             document.querySelectorAll('#numberRangeBox .btn-bet-opt').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#numberRangeBox .btn-bet-opt').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
+                    activeRange = this.getAttribute('data-range');
+                    initTable();
                 });
             });
 
+            // Bet Type Buttons
             document.querySelectorAll('#betTypeBox .btn-bet-opt').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#betTypeBox .btn-bet-opt').forEach(b => b.classList.remove('active'));
@@ -599,6 +175,7 @@
                 });
             });
 
+            // Coin Multiplier Buttons
             document.querySelectorAll('.coin-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.coin-btn').forEach(b => b.classList.remove('selected-coin'));
@@ -608,21 +185,41 @@
                 });
             });
 
+            // Reset Board Button
             document.getElementById('btnResetBoard').addEventListener('click', () => {
                 selectedPattis.clear();
                 document.querySelectorAll('.matrix-table td').forEach(cell => cell.classList.remove('selected-cell'));
                 updateSelectionSummary();
             });
 
+            // Submit Bet and Deduct Balance Button
             document.getElementById('btnSubmitBet').addEventListener('click', () => {
                 if (selectedPattis.size === 0) {
-                    alert("Please select at least one item!");
+                    alert("❌ অনুগ্রহ করে অন্তত একটি আইটেম সিলেক্ট করুন!");
                     return;
                 }
+
                 const totalAmount = selectedPattis.size * selectedCoinValue;
-                alert(`Bet placed successfully!\nTotal Items: ${selectedPattis.size}\nTotal Amount: ৳${totalAmount}`);
+                let users = JSON.parse(localStorage.getItem('game_users') || '{}');
+                let user = users[currentUser];
+
+                if (!user || user.balance < totalAmount) {
+                    alert(`❌ আপনার পর্যাপ্ত ব্যালেন্স নেই!\nপ্রয়োজন: ৳${totalAmount}\nআপনার ব্যালেন্স: ৳${user ? user.balance : 0}`);
+                    return;
+                }
+
+                // ব্যালেন্স ডিডাকশন
+                user.balance -= totalAmount;
+                users[currentUser] = user;
+                localStorage.setItem('game_users', JSON.stringify(users));
+
+                updateBalanceUI(user.balance, user.winBalance || 0);
+
+                alert(`✅ বেট সফলভাবে সম্পন্ন হয়েছে!\nরেঞ্জ: ${activeRange}\nমোট আইটেম: ${selectedPattis.size}\nমোট ব্যালেন্স থেকে কাটা হয়েছে: ৳${totalAmount}`);
+
+                selectedPattis.clear();
+                document.querySelectorAll('.matrix-table td').forEach(cell => cell.classList.remove('selected-cell'));
+                updateSelectionSummary();
             });
         });
     </script>
-</body>
-</html>
