@@ -34,7 +34,6 @@
             overflow-x: hidden;
         }
 
-        /* সাইডবার লেআউট */
         .sidebar {
             width: 260px;
             background-color: var(--bg-sidebar);
@@ -87,7 +86,6 @@
             margin-right: 5px;
         }
 
-        /* মেইন কন্টেন্ট */
         .main-container {
             flex: 1;
             display: flex;
@@ -181,7 +179,6 @@
             font-weight: bold;
         }
 
-        /* ওয়ার্কস্পেস লেআউট (১ম ছবির মতো ফিক্সড গ্রিড) */
         .workspace {
             display: grid;
             grid-template-columns: 1fr 340px;
@@ -227,7 +224,6 @@
             font-weight: bold;
         }
 
-        /* পারফেক্ট ম্যাট্রিক্স টেবিল ডিজাইন (ছবি ১ অনুযায়ী ৯টি কলাম) */
         .matrix-table {
             width: 100%;
             border-collapse: collapse;
@@ -257,8 +253,13 @@
             background: rgba(255, 193, 7, 0.1);
         }
 
+        .matrix-table td.selected-cell {
+            background: rgba(255, 193, 7, 0.3) !important;
+            border-color: var(--gold-bright);
+        }
+
         .patti-item {
-            margin-bottom: 6px;
+            margin-bottom: 2px;
             padding: 4px 2px;
             border-radius: 4px;
         }
@@ -274,7 +275,6 @@
             display: block;
         }
 
-        /* রাইট সাইড প্যানেল */
         .betting-panel {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -347,6 +347,10 @@
             font-size: 0.85rem;
             color: #94a3b8;
             text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-action {
@@ -373,7 +377,6 @@
 </head>
 <body>
 
-    <!-- সাইডবার মেনু -->
     <div class="sidebar">
         <ul class="sidebar-menu">
             <li class="menu-item active"><i class="fa-solid fa-table-cells"></i> Play Board</li>
@@ -392,7 +395,6 @@
         </div>
     </div>
 
-    <!-- মেইন উইন্ডো -->
     <div class="main-container">
         <div class="topbar">
             <div class="profile-section">
@@ -424,7 +426,6 @@
         </div>
 
         <div class="workspace">
-            <!-- টেবিল সেকশন -->
             <div class="board-section">
                 <div class="board-controls">
                     <button class="btn-ctrl" style="background:#d97706;"><i class="fa-solid fa-print"></i> Print</button>
@@ -436,7 +437,6 @@
                     </div>
                 </div>
 
-                <!-- ১ম ছবির মতো স্ট্যাটিক ৯-কলাম স্ট্রাকচার যা আর ভাঙবে না -->
                 <div style="overflow-x: auto;">
                     <table class="matrix-table">
                         <thead>
@@ -452,14 +452,11 @@
                                 <th>9</th>
                             </tr>
                         </thead>
-                        <tbody id="matrixBody">
-                            <!-- রেন্ডার ডেটা এখান থেকে লোড হবে -->
-                        </tbody>
+                        <tbody id="matrixBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- কন্ট্রোল প্যানেল -->
             <div class="betting-panel">
                 <div>
                     <div class="panel-title">Number Range</div>
@@ -505,89 +502,125 @@
         </div>
     </div>
 
-    <!-- গেম লজিক ও ইন্টারঅ্যাকশন স্ক্রিপ্ট -->
     <script>
-        // ডামি ম্যাট্রিক্স জেনারেটর (১ম ছবির মতো ১ থেকে ৯ কলামের ডেটা সেট আপ)
         const mockData = [
             {num: "100", word: "AXZ"}, {num: "200", word: "BCA"}, {num: "300", word: "CAG"},
             {num: "400", word: "EAK"}, {num: "500", word: "GAL"}, {num: "600", word: "JAN"},
             {num: "700", word: "LAP"}, {num: "800", word: "NAR"}, {num: "900", word: "RAS"}
         ];
 
+        let selectedPattis = new Set();
+        let selectedCoinValue = 10;
+        let activeViewMode = 'Both';
+
         function initTable() {
             const tbody = document.getElementById('matrixBody');
             tbody.innerHTML = "";
-            // ২০টি রো তৈরি করছি ১ম ছবির মতো দেখতে করতে
             for (let r = 0; r < 15; r++) {
                 let tr = document.createElement('tr');
                 for (let c = 0; c < 9; c++) {
                     let td = document.createElement('td');
                     let dataIndex = (r + c) % mockData.length;
                     let item = mockData[dataIndex];
-                    
-                    // ইউনিক আইডি দিয়ে ডিফাইন করা যাতে ক্লিক লজিক কাজ করে
+                    let displayNum = parseInt(item.num) + (r * 10);
+                    let uniqueId = `${displayNum}-${item.word}`;
+
                     td.innerHTML = `
-                        <div class="patti-item" data-id="${item.num}-${c}">
-                            <span class="patti-num">${parseInt(item.num) + (r * 10)}</span>
+                        <div class="patti-item" data-id="${uniqueId}">
+                            <span class="patti-num">${displayNum}</span>
                             <span class="patti-word">${item.word}</span>
                         </div>
                     `;
-                    
-                    // সেলের উপর ক্লিক ইভেন্ট সচল করা (সিঙ্গেল সিলেক্ট)
+
                     td.addEventListener('click', function() {
-                        document.querySelectorAll('.matrix-table td').forEach(cell => cell.style.background = 'none');
-                        this.style.background = 'rgba(255, 193, 7, 0.3)';
-                        
-                        const numText = this.querySelector('.patti-num').innerText;
-                        const wordText = this.querySelector('.patti-word').innerText;
-                        
-                        document.getElementById('selectedItemsContainer').innerText = `Selected Patti: ${numText} [${wordText}]`;
+                        if (selectedPattis.has(uniqueId)) {
+                            selectedPattis.delete(uniqueId);
+                            this.classList.remove('selected-cell');
+                        } else {
+                            selectedPattis.add(uniqueId);
+                            this.classList.add('selected-cell');
+                        }
+                        updateSelectionSummary();
                     });
-                    
+
                     tr.appendChild(td);
                 }
                 tbody.appendChild(tr);
             }
+            applyViewMode(activeViewMode);
+        }
+
+        function applyViewMode(mode) {
+            activeViewMode = mode;
+            const nums = document.querySelectorAll('.patti-num');
+            const words = document.querySelectorAll('.patti-word');
+
+            nums.forEach(el => {
+                el.style.display = (mode === 'Word') ? 'none' : 'block';
+            });
+            words.forEach(el => {
+                el.style.display = (mode === 'Digit') ? 'none' : 'block';
+            });
+        }
+
+        function updateSelectionSummary() {
+            const container = document.getElementById('selectedItemsContainer');
+            if (selectedPattis.size === 0) {
+                container.innerText = "Your selections will appear here";
+                return;
+            }
+            const totalBet = selectedPattis.size * selectedCoinValue;
+            container.innerHTML = `<div>Selected: <strong>${selectedPattis.size}</strong> items<br>Total Stake: <strong style="color:var(--gold-bright)">৳${totalBet}</strong></div>`;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             initTable();
 
-            // নাম্বার রেঞ্জ বাটন ফাংশন সচল করা
+            document.querySelectorAll('.view-by-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-by-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const mode = this.getAttribute('data-mode');
+                    applyViewMode(mode);
+                });
+            });
+
             document.querySelectorAll('#numberRangeBox .btn-bet-opt').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#numberRangeBox .btn-bet-opt').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
-                    alert(`Range switched to: ${this.getAttribute('data-range')}`);
                 });
             });
 
-            // বেট টাইপ (Single, Jora, Triple) বাটন টগল সচল করা
             document.querySelectorAll('#betTypeBox .btn-bet-opt').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('#betTypeBox .btn-bet-opt').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
-                    alert(`Bet Type changed to: ${this.getAttribute('data-type')}`);
                 });
             });
 
-            // কয়েন সিলেকশন অ্যাকশন
             document.querySelectorAll('.coin-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.coin-btn').forEach(b => b.classList.remove('selected-coin'));
                     this.classList.add('selected-coin');
+                    selectedCoinValue = parseInt(this.getAttribute('data-coin'));
+                    updateSelectionSummary();
                 });
             });
 
-            // রিসেট বাটন ক্লিয়ারিং অ্যাকশন
             document.getElementById('btnResetBoard').addEventListener('click', () => {
-                document.querySelectorAll('.matrix-table td').forEach(cell => cell.style.background = 'none');
-                document.getElementById('selectedItemsContainer').innerText = "Your selections will appear here";
+                selectedPattis.clear();
+                document.querySelectorAll('.matrix-table td').forEach(cell => cell.classList.remove('selected-cell'));
+                updateSelectionSummary();
             });
 
-            // সাবমিট বাটন অ্যাকশন ট্র্রিগার
             document.getElementById('btnSubmitBet').addEventListener('click', () => {
-                alert("Bet data successfully processed!");
+                if (selectedPattis.size === 0) {
+                    alert("Please select at least one item!");
+                    return;
+                }
+                const totalAmount = selectedPattis.size * selectedCoinValue;
+                alert(`Bet placed successfully!\nTotal Items: ${selectedPattis.size}\nTotal Amount: ৳${totalAmount}`);
             });
         });
     </script>
