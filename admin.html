@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Player Balance Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; display: flex; justify-content: center; }
+        .admin-card { background: #1e293b; padding: 25px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        h2 { color: #38bdf8; text-align: center; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; }
+        input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #0369a1; }
+        .msg { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; display: none; }
+        .msg.success { background: #166534; color: #4ade80; display: block; }
+        .msg.error { background: #991b1b; color: #fca5a5; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-card">
+        <h2>এডমিন প্যানেল (ব্যালেন্স রিচার্জ)</h2>
+        
+        <div class="form-group">
+            <label>প্লেয়ার আইডি (Player ID):</label>
+            <input type="text" id="targetPlayerId" placeholder="যেমন: a01 বা player1">
+        </div>
+        
+        <div class="form-group">
+            <label>রিচার্জের পরিমাণ (Amount):</label>
+            <input type="number" id="balanceAmount" placeholder="যেমন: 1000">
+        </div>
+        
+        <button onclick="addPlayerBalance()">ব্যালেন্স যোগ করুন</button>
+        
+        <div id="statusMsg" class="msg"></div>
+    </div>
+
+    <script>
+        function addPlayerBalance() {
+            const playerId = document.getElementById('targetPlayerId').value.trim();
+            const amount = parseFloat(document.getElementById('balanceAmount').value);
+            const msgBox = document.getElementById('statusMsg');
+
+            if (!playerId || isNaN(amount) || amount <= 0) {
+                msgBox.className = "msg error";
+                msgBox.innerText = "❌ সঠিক প্লেয়ার আইডি এবং টাকার পরিমাণ দিন!";
+                return;
+            }
+
+            // লোকাল মেমরি (localStorage) থেকে ইউজার ডেটা আনা
+            let users = JSON.parse(localStorage.getItem('game_users') || '{}');
+
+            if (!users[playerId]) {
+                // প্লেয়ার না থাকলে নতুন তৈরি করবে
+                users[playerId] = {
+                    id: playerId,
+                    balance: 0,
+                    winRate: 50 // ডিফল্ট পার্সেন্টেজ
+                };
+            }
+
+            // ব্যালেন্স যোগ করা
+            users[playerId].balance += amount;
+            localStorage.setItem('game_users', JSON.stringify(users));
+
+            msgBox.className = "msg success";
+            msgBox.innerText = `✅ আইডি (${playerId})-এ ৳${amount} যোগ হয়েছে! বর্তমান ব্যালেন্স: ৳${users[playerId].balance}`;
+
+            document.getElementById('targetPlayerId').value = '';
+            document.getElementById('balanceAmount').value = '';
+        }
+    </script>
+</body>
+</html>
